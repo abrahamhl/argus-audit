@@ -1,0 +1,55 @@
+{
+  "id": "missing-headers",
+  "name": "German SME site with no security headers",
+  "target": "https://missing-headers.test/",
+  "recordedAt": "2026-09-20T09:20:00.000Z",
+  "notes": [
+    "Synthetic fixture. Not a recording of a real company.",
+    "HTTPS enforced and privacy/legal pages present and reachable, but none of the common security headers are set.",
+    "Expected outcome: three review findings (HSTS, CSP, framing protection) and four informational findings."
+  ],
+  "responses": [
+    {
+      "url": "http://missing-headers.test/",
+      "status": 301,
+      "headers": {
+        "location": "https://missing-headers.test/",
+        "content-type": "text/html"
+      },
+      "body": ""
+    },
+    {
+      "url": "https://missing-headers.test/",
+      "status": 200,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "server": "Apache/2.4.41 (Ubuntu)"
+      },
+      "body": "<html lang='de'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Handwerk Muster GmbH</title></head><body><nav><a href='/impressum'>Impressum</a><a href='/datenschutz'>Datenschutz</a><a href='/kontakt'>Kontakt</a><a href='/agb'>AGB</a></nav><main><h1>Willkommen</h1><img src='/bild.jpg' alt='Werkstatt'></main></body></html>"
+    },
+    {
+      "url": "https://missing-headers.test/impressum",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='de'><head><title>Impressum</title></head><body><h1>Impressum</h1></body></html>"
+    },
+    {
+      "url": "https://missing-headers.test/datenschutz",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='de'><head><title>Datenschutzerklärung</title></head><body><h1>Datenschutz</h1></body></html>"
+    },
+    {
+      "url": "https://missing-headers.test/kontakt",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='de'><head><title>Kontakt</title></head><body><h1>Kontakt</h1></body></html>"
+    },
+    {
+      "url": "https://missing-headers.test/agb",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='de'><head><title>AGB</title></head><body><h1>AGB</h1></body></html>"
+    }
+  ]
+}
