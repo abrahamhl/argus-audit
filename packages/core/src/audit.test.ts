@@ -29,26 +29,31 @@ describe('end-to-end fixture audits', () => {
     expect(result.evidence.every((record) => record.provenance.fixtureId === 'healthy-site')).toBe(true);
   });
 
-  it('missing-headers: three review findings and four informational ones', async () => {
+  it('missing-headers: five review findings and six informational ones', async () => {
     const result = await auditFixture('missing-headers');
-    expect(result.summary.counts).toEqual({ critical: 0, review: 3, informational: 4, total: 7 });
+    expect(result.summary.counts).toEqual({ critical: 0, review: 5, informational: 6, total: 11 });
     expect(sortedIds(result, 'review')).toEqual([
+      'email.dmarc-missing',
+      'email.spf-missing',
       'headers.clickjacking-protection-not-observed',
       'headers.content-security-policy-not-observed',
       'transport.hsts-not-observed',
     ]);
     expect(sortedIds(result, 'informational')).toEqual([
+      'dns.caa-missing',
       'headers.permissions-policy-not-observed',
       'headers.referrer-policy-not-observed',
       'headers.x-content-type-options-not-observed',
       'privacy.consent-indicator-not-detected',
+      'security.txt-missing',
     ]);
   });
 
-  it('messy-site: mixed findings, zero critical, privacy and link problems surfaced', async () => {
+  it('messy-site: mixed findings, zero critical, privacy, link, email and DNS problems surfaced', async () => {
     const result = await auditFixture('messy-site');
-    expect(result.summary.counts).toEqual({ critical: 0, review: 6, informational: 7, total: 13 });
+    expect(result.summary.counts).toEqual({ critical: 0, review: 7, informational: 10, total: 17 });
     expect(sortedIds(result, 'review')).toEqual([
+      'email.spf-weak-all',
       'headers.clickjacking-protection-not-observed',
       'headers.content-security-policy-not-observed',
       'privacy.cookie-flags-incomplete',
@@ -56,9 +61,18 @@ describe('end-to-end fixture audits', () => {
       'transport.hsts-not-observed',
       'transport.no-https-redirect',
     ]);
-    expect(sortedIds(result, 'informational')).toContain('links.broken-sample');
-    expect(sortedIds(result, 'informational')).toContain('a11y.html-lang-not-observed');
-    expect(sortedIds(result, 'informational')).toContain('a11y.images-missing-alt');
+    expect(sortedIds(result, 'informational')).toEqual([
+      'a11y.html-lang-not-observed',
+      'a11y.images-missing-alt',
+      'dns.caa-missing',
+      'email.dmarc-policy-none',
+      'headers.permissions-policy-not-observed',
+      'headers.referrer-policy-not-observed',
+      'headers.x-content-type-options-not-observed',
+      'links.broken-sample',
+      'privacy.consent-indicator-not-detected',
+      'security.txt-missing',
+    ]);
 
     const broken = result.findings.find((finding) => finding.findingId === 'links.broken-sample');
     expect(broken?.summary).toContain('3 of 4');
@@ -241,7 +255,7 @@ describe('optional AI explanation layer', () => {
     expect(result.explainer.error).toContain('provider unavailable');
     expect(result.explainer.applied).toBe(0);
     expect(result.reports.client).toContain('not a security assessment');
-    expect(result.summary.counts.total).toBe(13);
+    expect(result.summary.counts.total).toBe(17);
   });
 
   it('rejects AI output that introduces a forbidden legal or fear claim', async () => {

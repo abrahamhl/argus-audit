@@ -1,10 +1,13 @@
 import {
   AuditError,
+  DohResolver,
+  FixtureDnsResolver,
   FixtureTransport,
   LiveTransport,
   normalizeTargetInput,
   runAudit,
   type AuditResult,
+  type DnsResolver,
   type ExplanationProvider,
   type HttpTransport,
 } from '@argus-audit/core';
@@ -129,6 +132,7 @@ async function handleAudit(request: Request, env: Env, cors: Record<string, stri
 
   const mode = auditMode(env);
   let transport: HttpTransport;
+  let dnsResolver: DnsResolver;
   if (mode === 'fixture') {
     const bundle = resolveBundleFor(parsed.value.url);
     if (bundle === null) {
@@ -146,13 +150,16 @@ async function handleAudit(request: Request, env: Env, cors: Record<string, stri
       );
     }
     transport = new FixtureTransport(bundle);
+    dnsResolver = new FixtureDnsResolver(bundle.dns ?? [], bundle.id);
   } else {
     transport = new LiveTransport({ requestTimeoutMs: 10_000, maxBodyBytes: 524_288 });
+    dnsResolver = new DohResolver();
   }
 
   return executeAudit(env, {
     target: parsed.value.url,
     transport,
+    dnsResolver,
     mode,
     cors,
     turnstileToken: parsed.value.turnstileToken ?? '',
@@ -190,6 +197,7 @@ async function handleLabAudit(request: Request, env: Env, cors: Record<string, s
   return executeAudit(env, {
     target: parsed.value.url,
     transport: new FixtureTransport(bundle),
+    dnsResolver: new FixtureDnsResolver(bundle.dns ?? [], bundle.id),
     mode: 'fixture',
     cors,
     turnstileToken: '',
@@ -200,6 +208,7 @@ async function handleLabAudit(request: Request, env: Env, cors: Record<string, s
 interface AuditExecution {
   target: string;
   transport: HttpTransport;
+  dnsResolver: DnsResolver;
   mode: 'live' | 'fixture';
   cors: Record<string, string>;
   turnstileToken: string;
@@ -244,6 +253,7 @@ async function executeAudit(env: Env, execution: AuditExecution): Promise<Respon
     const result: AuditResult = await runAudit({
       target: normalized.target.input,
       transport: execution.transport,
+      dnsResolver: execution.dnsResolver,
       source: execution.mode === 'fixture' ? 'fixture' : 'live',
       ...(explainer === undefined ? {} : { explainer }),
     });

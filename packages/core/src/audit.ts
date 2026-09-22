@@ -13,10 +13,12 @@ import { systemClock, type Clock } from './util/clock';
 import { sha256Hex, stableJson } from './util/hash';
 import { findForbiddenClaim } from './claims';
 import { templateExplainer, type ExplanationProvider } from './explain/types';
+import { unavailableDnsResolver, type DnsResolver } from './dns/types';
 
 export interface AuditOptions {
   target: string;
   transport: HttpTransport;
+  dnsResolver?: DnsResolver;
   clock?: Clock;
   auditId?: string;
   limits?: Partial<Limits>;
@@ -79,6 +81,7 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
     target,
     clock,
     http,
+    dns: options.dnsResolver ?? unavailableDnsResolver,
     limits,
     source,
     evidence: evidenceBuilder,

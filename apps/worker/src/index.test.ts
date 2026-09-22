@@ -123,8 +123,9 @@ describe('methodology surface', () => {
     const methodology = buildMethodology();
     expect(methodology.methodologyVersion).toMatch(/^\d+\.\d+\.\d+$/);
     expect(methodology.scanners.map((scanner) => scanner.id)).toContain('http.reachability');
-    expect(methodology.scanners.length).toBe(6);
-    expect(methodology.rules.length).toBeGreaterThan(10);
+    expect(methodology.scanners.map((scanner) => scanner.id)).toContain('dns.records');
+    expect(methodology.scanners.length).toBe(8);
+    expect(methodology.rules.length).toBeGreaterThan(20);
     expect(methodology.states['NOT_CHECKED']).toContain('out of scope');
     expect(methodology.limits.maxRedirects).toBe(5);
     for (const rule of methodology.rules) {

@@ -6,7 +6,15 @@
   "notes": [
     "Synthetic fixture. Not a recording of a real company.",
     "HTTPS enforced and privacy/legal pages present and reachable, but none of the common security headers are set.",
-    "Expected outcome: three review findings (HSTS, CSP, framing protection) and four informational findings."
+    "Expected outcome: five review findings (HSTS, CSP, framing protection, missing SPF, missing DMARC) and six informational findings."
+  ],
+  "dns": [
+    { "name": "missing-headers.test", "type": "A", "status": "OK", "answers": [{ "data": "203.0.113.10", "ttl": 300 }] },
+    { "name": "missing-headers.test", "type": "AAAA", "status": "OK", "answers": [] },
+    { "name": "missing-headers.test", "type": "MX", "status": "OK", "answers": [{ "data": "10 mail.missing-headers.test.", "ttl": 300 }] },
+    { "name": "missing-headers.test", "type": "TXT", "status": "OK", "answers": [{ "data": "google-site-verification=fixture", "ttl": 300 }] },
+    { "name": "missing-headers.test", "type": "CAA", "status": "OK", "answers": [] },
+    { "name": "_dmarc.missing-headers.test", "type": "TXT", "status": "NXDOMAIN", "answers": [] }
   ],
   "responses": [
     {

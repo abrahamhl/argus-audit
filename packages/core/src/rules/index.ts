@@ -6,6 +6,8 @@ import { headerRules } from './headers';
 import { privacyRules } from './privacy';
 import { linkRules } from './links';
 import { accessibilityRules } from './accessibility';
+import { emailRules } from './email';
+import { securityRules } from './security';
 
 export type { Rule, RuleContext, EvidenceIndex } from './types';
 export { createEvidenceIndex } from './types';
@@ -15,6 +17,8 @@ export const allRules: Rule[] = [
   ...transportRules,
   ...headerRules,
   ...privacyRules,
+  ...emailRules,
+  ...securityRules,
   ...linkRules,
   ...accessibilityRules,
 ];

@@ -8,6 +8,27 @@
     "HTTPS enforced, HSTS + CSP + XFO + XCTO + Referrer-Policy present, privacy page linked and reachable, consent tool indicator present, no broken sampled links.",
     "Expected outcome: one informational finding (Permissions-Policy not observed)."
   ],
+  "dns": [
+    { "name": "healthy-site.test", "type": "A", "status": "OK", "answers": [{ "data": "93.184.216.34", "ttl": 300 }] },
+    { "name": "healthy-site.test", "type": "AAAA", "status": "OK", "answers": [] },
+    { "name": "healthy-site.test", "type": "MX", "status": "OK", "answers": [{ "data": "10 mx1.healthy-site.test.", "ttl": 300 }] },
+    {
+      "name": "healthy-site.test",
+      "type": "TXT",
+      "status": "OK",
+      "answers": [
+        { "data": "v=spf1 include:_spf.healthy-site.test -all", "ttl": 300 },
+        { "data": "google-site-verification=fixture", "ttl": 300 }
+      ]
+    },
+    { "name": "healthy-site.test", "type": "CAA", "status": "OK", "answers": [{ "data": "0 issue \"letsencrypt.org\"", "ttl": 300 }] },
+    {
+      "name": "_dmarc.healthy-site.test",
+      "type": "TXT",
+      "status": "OK",
+      "answers": [{ "data": "v=DMARC1; p=reject; rua=mailto:dmarc@healthy-site.test", "ttl": 300 }]
+    }
+  ],
   "responses": [
     {
       "url": "http://healthy-site.test/",
@@ -61,6 +82,12 @@
       "status": 200,
       "headers": { "content-type": "text/html; charset=utf-8" },
       "body": "<html lang='en'><head><title>Accessibility — Acme</title></head><body><h1>Accessibility statement</h1></body></html>"
+    },
+    {
+      "url": "https://healthy-site.test/.well-known/security.txt",
+      "status": 200,
+      "headers": { "content-type": "text/plain; charset=utf-8" },
+      "body": "Contact: mailto:security@healthy-site.test\nExpires: 2027-01-01T00:00:00.000Z\nPreferred-Languages: en\nCanonical: https://healthy-site.test/.well-known/security.txt\nPolicy: https://healthy-site.test/security-policy\n"
     }
   ]
 }

@@ -4,6 +4,7 @@ import { EvidenceBuilder } from './evidence';
 import { HttpClient, MemoTransport, type HttpClientOptions } from './transport/client';
 import { FixtureTransport } from './transport/fixture';
 import type { FixtureBundle } from './transport/fixture-types';
+import { FixtureDnsResolver } from './dns/fixture';
 import { normalizeTargetInput } from './url-guard';
 import { fixedClock } from './util/clock';
 import type { ScanContext } from './contracts';
@@ -42,6 +43,7 @@ export function createTestHarness(bundle: FixtureBundle): TestHarness {
     target: targetResult.target,
     clock,
     http,
+    dns: new FixtureDnsResolver(bundle.dns ?? [], bundle.id),
     limits: { ...DEFAULT_LIMITS, perRequestDelayMs: 0 },
     source: 'fixture',
     evidence,
@@ -50,9 +52,11 @@ export function createTestHarness(bundle: FixtureBundle): TestHarness {
 }
 
 export function fixtureAuditOptions(id: string) {
+  const bundle = loadFixtureBundle(id);
   return {
-    target: loadFixtureBundle(id).target,
-    transport: new FixtureTransport(loadFixtureBundle(id)),
+    target: bundle.target,
+    transport: new FixtureTransport(bundle),
+    dnsResolver: new FixtureDnsResolver(bundle.dns ?? [], bundle.id),
     clock: fixedClock(TEST_CLOCK_ISO),
     auditId: TEST_AUDIT_ID,
     source: 'fixture' as const,

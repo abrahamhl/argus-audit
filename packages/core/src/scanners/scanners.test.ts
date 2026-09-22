@@ -7,6 +7,8 @@ import { securityHeadersScanner } from './security-headers';
 import { privacyPagesScanner } from './privacy-pages';
 import { brokenLinksScanner } from './broken-links';
 import { frontendTechScanner } from './frontend-tech';
+import { dnsScanner } from './dns';
+import { securityTxtScanner } from './security-txt';
 import type { EvidenceRecord } from '../evidence';
 import { boolOf, dataOf, numOf, strOf } from '../rules/types';
 
@@ -162,5 +164,51 @@ describe('frontend-tech scanner', () => {
     expect(strOf(a11y, 'htmlLang')).toBeNull();
     expect(numOf(a11y, 'imagesTotal')).toBe(3);
     expect(numOf(a11y, 'imagesMissingAlt')).toBe(2);
+  });
+});
+
+describe('dns scanner', () => {
+  it('parses a strict SPF and reject DMARC policy on the healthy fixture', async () => {
+    const records = await runScanner('healthy-site', dnsScanner);
+    const summary = first(records, CHECK_IDS.dnsSummary);
+    const data = dataOf(summary);
+    expect(data['statuses']).toMatchObject({ TXT: 'OK', DMARC: 'OK', CAA: 'OK' });
+    expect(data['spf']).toMatchObject({ present: true, allQualifier: '-' });
+    expect(data['dmarc']).toMatchObject({ present: true, policy: 'reject' });
+    expect(data['caa']).toMatchObject({ present: true });
+    expect(summary.provenance.fixtureId).toBe('healthy-site');
+  });
+
+  it('observes missing SPF and DMARC on the missing-headers fixture', async () => {
+    const records = await runScanner('missing-headers', dnsScanner);
+    const data = dataOf(first(records, CHECK_IDS.dnsSummary));
+    expect(data['spf']).toMatchObject({ present: false });
+    expect(data['dmarc']).toMatchObject({ present: false });
+    expect(data['statuses']).toMatchObject({ TXT: 'OK', DMARC: 'NXDOMAIN' });
+  });
+
+  it('observes a permissive SPF and p=none DMARC on the messy fixture', async () => {
+    const records = await runScanner('messy-site', dnsScanner);
+    const data = dataOf(first(records, CHECK_IDS.dnsSummary));
+    expect(data['spf']).toMatchObject({ present: true, allQualifier: '+' });
+    expect(data['dmarc']).toMatchObject({ present: true, policy: 'none' });
+  });
+});
+
+describe('security.txt scanner', () => {
+  it('finds a valid security.txt on the healthy fixture without storing contacts', async () => {
+    const records = await runScanner('healthy-site', securityTxtScanner);
+    const record = first(records, CHECK_IDS.securityTxt);
+    expect(boolOf(record, 'found')).toBe(true);
+    expect(boolOf(record, 'expired')).toBe(false);
+    expect(numOf(record, 'contactCount')).toBe(1);
+    expect(JSON.stringify(record.data)).not.toContain('security@');
+  });
+
+  it('observes both standard paths returning 404 on the messy fixture', async () => {
+    const records = await runScanner('messy-site', securityTxtScanner);
+    const record = first(records, CHECK_IDS.securityTxt);
+    expect(boolOf(record, 'found')).toBe(false);
+    expect(numOf(record, 'status')).toBe(404);
   });
 });
