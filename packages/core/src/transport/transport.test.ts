@@ -28,6 +28,7 @@ describe('FixtureTransport', () => {
     expect(response.fixtureId).toBe('mini');
     expect(response.recordedAt).toBe('2026-09-20T00:00:00.000Z');
     expect(response.bodyText).toContain('<html>');
+    expect(response.bodySha256).toMatch(/^[0-9a-f]{64}$/);
   });
 
   it('answers HEAD from a recorded GET without a body', async () => {

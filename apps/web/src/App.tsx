@@ -1,15 +1,21 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import type { AuditResult, ReportMode } from '@argus-audit/core';
 import { fetchHealth, requestAudit, type HealthInfo } from './api';
-import { IdleView } from './components/IdleView';
-import { RunningView } from './components/RunningView';
-import { ResultView } from './components/ResultView';
+import { useRoute } from './router';
+import { TopBar } from './components/TopBar';
+import { HomePage } from './pages/HomePage';
+import { AuditPage } from './pages/AuditPage';
+import { LabPage } from './pages/LabPage';
+import { MethodPage } from './pages/MethodPage';
+import { ArchitecturePage } from './pages/ArchitecturePage';
 
 type Phase = 'idle' | 'running' | 'done' | 'error';
 
 const THEME_KEY = 'argus-audit-theme';
+const REPO = 'https://github.com/abrahamhl/argus-audit';
 
 export function App(): ReactNode {
+  const [route, navigate] = useRoute();
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     const stored = window.localStorage.getItem(THEME_KEY);
     if (stored === 'light' || stored === 'dark') return stored;
@@ -75,48 +81,34 @@ export function App(): ReactNode {
       <a className="skip-link" href="#main">
         Skip to content
       </a>
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark" aria-hidden="true">
-            AA
-          </span>
-          <div>
-            <p className="brand-name">ARGUS AUDIT</p>
-            <p className="brand-tag">Evidence → Provenance → Finding → Report</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          className="btn btn-ghost btn-small"
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-        >
-          {theme === 'dark' ? 'Light' : 'Dark'}
-        </button>
-      </header>
+      <TopBar
+        route={route}
+        onNavigate={navigate}
+        theme={theme}
+        onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+        mode={demo?.mode ?? null}
+      />
 
       <main id="main">
-        {phase === 'idle' ? <IdleView demo={demo} onRun={run} /> : null}
-        {phase === 'running' ? <RunningView url={target} /> : null}
-        {phase === 'error' ? (
-          <section className="error-card" role="alert">
-            <h2>The audit could not be completed</h2>
-            <p>{error}</p>
-            <button type="button" className="btn btn-primary" onClick={reset}>
-              Try again
-            </button>
-          </section>
-        ) : null}
-        {phase === 'done' && result !== null ? (
-          <ResultView
+        {route === '/' ? <HomePage demo={demo} onNavigate={navigate} /> : null}
+        {route === '/audit' ? (
+          <AuditPage
+            demo={demo}
+            phase={phase}
+            target={target}
             result={result}
+            error={error}
             selectedId={selectedId}
             mode={mode}
+            onRun={run}
             onSelect={select}
             onMode={setMode}
             onReset={reset}
           />
         ) : null}
+        {route === '/lab' ? <LabPage /> : null}
+        {route === '/method' ? <MethodPage /> : null}
+        {route === '/architecture' ? <ArchitecturePage /> : null}
       </main>
 
       <footer className="footer">
@@ -125,8 +117,13 @@ export function App(): ReactNode {
           to audit. It is not a vulnerability scanner, not a penetration test, and not legal advice.
         </p>
         <p className="muted small">
-          No accounts, no tracking pixels, no advertising. Evidence first; AI optional and never the source of
-          truth.
+          No accounts, no tracking, no advertising. Evidence first; AI optional and never the source of truth.
+          {' · '}
+          <a href={`${REPO}/blob/main/docs/THREAT_MODEL.md`}>Threat model</a>
+          {' · '}
+          <a href={`${REPO}/blob/main/docs/EVIDENCE_CONTRACT.md`}>Evidence contract</a>
+          {' · '}
+          <a href={REPO}>Source</a>
         </p>
       </footer>
     </div>
