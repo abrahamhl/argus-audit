@@ -3,6 +3,7 @@ import { runAudit, type AuditResult } from './audit';
 import { TEST_AUDIT_ID, fixtureAuditOptions } from './test-utils';
 import { FixtureTransport } from './transport/fixture';
 import { fixedClock } from './util/clock';
+import { FORBIDDEN_CLAIM_PHRASES } from './claims';
 import type { FixtureBundle } from './transport/fixture-types';
 
 async function auditFixture(id: string): Promise<AuditResult> {
@@ -156,34 +157,67 @@ describe('audit invariants', () => {
   });
 });
 
-describe('claims guard', () => {
-  const forbidden = [
-    'violates gdpr',
-    'gdpr violation',
-    'violation of the gdpr',
-    'non-compliant',
-    'noncompliant',
-    'illegal',
-    'fine of',
-    'fines of',
-    'will be fined',
-    'lawsuit',
-    'prosecut',
-    'certified secure',
-    'guaranteed secure',
-    'guaranteed to',
-    'hacked',
-    'urgent action',
-    'act now',
-    'limited time',
-  ];
+describe('evidence canonical hash', () => {
+  it('is a stable SHA-256 over the canonical evidence set and lands in the engineer report', async () => {
+    const first = await auditFixture('messy-site');
+    const second = await auditFixture('messy-site');
+    expect(first.evidenceHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(first.evidenceHash).toBe(second.evidenceHash);
+    expect(first.reports.engineer).toContain(first.evidenceHash);
 
+    const other = await auditFixture('healthy-site');
+    expect(other.evidenceHash).not.toBe(first.evidenceHash);
+  });
+});
+
+describe('blocked root responses (WAF / challenge pages)', () => {
+  const blockedBundle: FixtureBundle = {
+    id: 'blocked-root',
+    name: 'WAF-blocked root',
+    target: 'https://blocked.test/',
+    recordedAt: '2026-09-20T00:00:00.000Z',
+    responses: [
+      {
+        url: 'http://blocked.test/',
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+        body: '<html><body>plain</body></html>',
+      },
+      {
+        url: 'https://blocked.test/',
+        status: 403,
+        headers: { 'content-type': 'text/html', server: 'cloudflare' },
+        body: '<html><body>Attention Required! Challenge page</body></html>',
+      },
+    ],
+  };
+
+  it('never turns an error-status root into header, privacy or accessibility findings', async () => {
+    const result = await runAudit({
+      target: blockedBundle.target,
+      transport: new FixtureTransport(blockedBundle),
+      clock: fixedClock('2026-09-21T12:00:00.000Z'),
+      auditId: TEST_AUDIT_ID,
+      source: 'fixture',
+      limits: { perRequestDelayMs: 0 },
+    });
+
+    expect(result.findings.map((finding) => finding.findingId)).toEqual(['transport.no-https-redirect']);
+    const scan = result.evidence.find((record) => record.checkId === 'privacy.link.scan');
+    expect(scan?.state).toBe('NOT_CHECKED');
+    expect(scan?.data).toMatchObject({ reason: 'blocked' });
+    const a11y = result.evidence.find((record) => record.checkId === 'a11y.signals');
+    expect(a11y?.state).toBe('NOT_CHECKED');
+  });
+});
+
+describe('claims guard', () => {
   it('never states legal conclusions, fines or fear marketing in any report', async () => {
     for (const id of ['healthy-site', 'missing-headers', 'messy-site'] as const) {
       const result = await auditFixture(id);
       for (const mode of ['simple', 'engineer', 'client'] as const) {
         const text = result.reports[mode].toLowerCase();
-        for (const phrase of forbidden) {
+        for (const phrase of FORBIDDEN_CLAIM_PHRASES) {
           expect(text.includes(phrase), `${id}/${mode} contains "${phrase}"`).toBe(false);
         }
       }
@@ -208,6 +242,25 @@ describe('optional AI explanation layer', () => {
     expect(result.explainer.applied).toBe(0);
     expect(result.reports.client).toContain('not a security assessment');
     expect(result.summary.counts.total).toBe(13);
+  });
+
+  it('rejects AI output that introduces a forbidden legal or fear claim', async () => {
+    const options = fixtureAuditOptions('messy-site');
+    const result = await runAudit({
+      ...options,
+      explainer: {
+        id: 'claim-injecting-test-explainer',
+        enabled: true,
+        async explain() {
+          return { clientExplanation: 'This company violates GDPR and will be fined.' };
+        },
+      },
+    });
+    expect(result.explainer.applied).toBe(0);
+    expect(result.explainer.error).toContain('forbidden claim');
+    for (const finding of result.findings) {
+      expect(finding.clientExplanation.toLowerCase()).not.toContain('violates gdpr');
+    }
   });
 
   it('applies a successful explanation while keeping deterministic findings intact', async () => {

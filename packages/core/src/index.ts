@@ -76,5 +76,6 @@ export { renderEngineerReport } from './report/engineer';
 export { renderClientReport } from './report/client';
 
 export { templateExplainer, noExplainer, type ExplanationProvider, type ExplanationRequest, type ExplanationResult } from './explain/types';
+export { FORBIDDEN_CLAIM_PHRASES, findForbiddenClaim } from './claims';
 
 export { runAudit, type AuditOptions, type AuditResult } from './audit';

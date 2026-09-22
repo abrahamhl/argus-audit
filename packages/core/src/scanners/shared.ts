@@ -4,7 +4,8 @@ import type { HttpExchange } from '../transport/client';
 export interface HomepageHtml {
   exchange: HttpExchange;
   html: string | null;
-  reason: 'ok' | 'error' | 'no-body' | 'not-html';
+  /** `blocked`: the target answered the root request with an error status (WAF, challenge, outage). */
+  reason: 'ok' | 'error' | 'blocked' | 'no-body' | 'not-html';
   contentType: string | null;
 }
 
@@ -13,6 +14,9 @@ export async function getHomepageHtml(ctx: ScanContext): Promise<HomepageHtml> {
   const contentType = exchange.headers['content-type'] ?? null;
   if (exchange.error !== undefined) {
     return { exchange, html: null, reason: 'error', contentType };
+  }
+  if (exchange.status >= 400) {
+    return { exchange, html: null, reason: 'blocked', contentType };
   }
   if (exchange.bodyText === undefined || exchange.bodyText.length === 0) {
     return { exchange, html: null, reason: 'no-body', contentType };
