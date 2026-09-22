@@ -54,6 +54,13 @@ adjetivos.
   referencia a secreto. Arreglo: `--exclude-dir=.github` (además de `.git`,
   `node_modules`, `dist`). La funcionalidad nunca estuvo afectada; solo el
   detector.
+- **UI verificada en navegador real (Playwright, headless Chromium):** flujo
+  completo a 375 px y 1440 px — auditoría de `messy-site.test`, clic en finding,
+  los 4 pasos del Evidence Trace, pestañas Simple/Engineer/Client. **0 errores
+  de consola** en ambos tamaños. Capturas en
+  `%TEMP%\argus-ui\argus-{mobile,desktop}-{summary,trace,engineer,client}.png`.
+- Pulido tras la revisión visual: el informe CLIENT usa etiquetas humanas
+  ("Browser-level protections") en lugar del id técnico de categoría.
 
 ### Decisiones tomadas (y por qué)
 

@@ -9,6 +9,15 @@ const MODES: { id: ReportMode; label: string; hint: string }[] = [
   { id: 'client', label: 'Client', hint: 'Plain language, no jargon' },
 ];
 
+const CATEGORY_LABELS: Record<string, string> = {
+  availability: 'Being reachable',
+  'transport-security': 'Secure connection',
+  'security-headers': 'Browser-level protections',
+  privacy: 'Privacy basics',
+  'content-quality': 'Links and content',
+  accessibility: 'Accessibility',
+};
+
 export function ReportPanel({
   result,
   mode,
@@ -266,7 +275,7 @@ function ClientReport({ result }: { result: AuditResult }): ReactNode {
       <p className="headline">{intro}</p>
       {categories.map((category) => (
         <section key={category}>
-          <h3>{category.replace('-', ' ')}</h3>
+          <h3>{CATEGORY_LABELS[category] ?? category}</h3>
           <ul className="simple-list">
             {result.findings
               .filter((finding) => finding.category === category)
