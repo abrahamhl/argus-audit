@@ -12,9 +12,10 @@ them. Gates are never edited to look better than the evidence.
 
 Current evidence:
 
-- 59 deterministic core tests + 8 worker tests, all fixture-backed and offline.
+- 62 deterministic core tests + 14 worker tests, all fixture-backed and offline
+  (plus a live smoke suite of 9 checks against the deployment).
 - End-to-end audits of three recorded fixtures with byte-identical repeat runs.
-- Claims guard prevents legal/fear phrasing in every report.
+- Claims guard prevents legal/fear phrasing in every report, including AI output.
 - **Missing:** at least one live audit of an authorised target, reproduced by a
   second person following the ENGINEER report steps. Until that exists, the
   gate stays OPEN.

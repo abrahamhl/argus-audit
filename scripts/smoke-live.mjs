@@ -107,8 +107,13 @@ await check('built bundle exposes no source map', async () => {
   const match = html.match(/\/assets\/[A-Za-z0-9._-]+\.js/);
   assert(match !== null, 'no bundle reference in html');
   const mapResponse = await fetch(`${base}${match[0]}.map`);
-  assert(mapResponse.status === 404, `source map served with ${mapResponse.status}`);
-  return `${match[0]}.map → 404`;
+  if (mapResponse.status === 404) return `${match[0]}.map → 404`;
+  const contentType = (mapResponse.headers.get('content-type') ?? '').split(';')[0];
+  const body = await mapResponse.text();
+  const looksLikeSourceMap = /"version"\s*:\s*3/.test(body) && /"sources"\s*:/.test(body);
+  assert(!looksLikeSourceMap, 'an actual source map is served');
+  assert(contentType === 'text/html', `unexpected content-type ${contentType} for a map path`);
+  return `${match[0]}.map → ${mapResponse.status} ${contentType} (SPA fallback, no map)`;
 });
 
 let failed = 0;

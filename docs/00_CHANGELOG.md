@@ -5,6 +5,66 @@ adjetivos.
 
 ---
 
+## 2026-09-22 — Consolidación, fase 0 + PR-01 (production hardening)
+
+### DONE
+
+- **Phase 0 truth-before-code:** donantes a worktrees aislados y tests
+  reproducidos: `argus@48b554e` **178/178** (requiere `pnpm build` antes; sin
+  build da 0 y su `pnpm verify` está desactivado), `web-exposure-scan@4f5a865`
+  **8/8**. Matrix completa en `docs/CONSOLIDATION_MATRIX.md`.
+- **Núcleo:** hash canónico SHA-256 de evidencia (`evidenceHash`) en cada
+  auditoría y en el informe ENGINEER; guarda 4xx/WAF (una raíz 403 ya no genera
+  findings de cabeceras ausentes ni de privacidad: estado `blocked` →
+  `NOT_CHECKED`); validador de claims prohibidos aplicado también a la salida de
+  IA (si la IA introduce "violates GDPR" se rechaza y queda el texto
+  determinista). Metodología **0.2.0**.
+- **Worker:** anti-abuso con Durable Object (ventana 5/min/IP + **tope diario
+  global de 500 auditorías**, configurable), fallback en memoria; política de
+  origen explícita (mismo host o `ALLOWED_ORIGIN` de desarrollo); campo
+  obligatorio `acknowledged`; endpoints `/api/methodology`, `/api/lab/fixtures`,
+  `/api/lab/audit`; site key de Turnstile en `/api/health` (runtime).
+- **Web:** checkbox de autorización obligatorio; site key de Turnstile leída en
+  runtime (sin rebuild); hash canónico visible en la pestaña Engineer.
+- **CI/verificación:** higiene de `dist` (sin source maps, sin cadenas tipo
+  secreto); `scripts/smoke-live.mjs` + workflow manual `deploy-smoke.yml`;
+  `pnpm smoke:live`.
+- **Desplegado:** Version ID `f3544168-c7fa-4c03-b0e0-8aba2e8f0fdc` en
+  https://argus-audit.argus-lab.workers.dev/ desde
+  `consolidation/argus-master-v1` (aún sin merge a main).
+
+### VERIFIED
+
+- Tests: **62 core + 14 worker, 0 fallos**; typecheck, build web y dry-run del
+  Worker verdes.
+- Smoke live: **9/9** (health v0.2.0, 6 cabeceras de seguridad, validaciones,
+  metodología 6 scanners/15 reglas, 3 fixtures, sin source maps servidos).
+- UI live con navegador real (Playwright): auditoría de `example.com` →
+  9 findings, traza de evidencia con JSON en bruto, 0 errores de consola en
+  1440 px y 375 px.
+- DO verificado en local: la ventana cuenta entre rutas y persiste (3+3=5
+  permitidas, resto 429), acknowledgment 400 sin consumo de scan.
+
+### Roto y arreglado
+
+- El primer `pnpm smoke:live` dio 8/9: el check de source maps esperaba 404,
+  pero el fallback SPA devuelve 200 HTML para rutas inexistentes. No había mapa
+  expuesto; el script ahora valida el **contenido** (no debe haber
+  `"version":3`/`"sources"`), no el código de estado.
+
+### DECISIONES nuevas
+
+- D03–D11 en `docs/DECISIONS.md` (TLS como frontera de adaptador, DNS vía DoH,
+  sin precios públicos, Turnstile runtime, DO anti-abuso, IA con validador,
+  licencia donante ambigua, simulador gh-pages retirado).
+
+### PENDIENTE en este PR
+
+- Activar Turnstile (acción del owner: crear widget + `wrangler secret put`).
+- Merge a `main` (no automático) tras re-ejecutar aceptación.
+
+---
+
 ## 2026-09-22 — Primer PR: V0 evidence audit
 
 ### Creado
