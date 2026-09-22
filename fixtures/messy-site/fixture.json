@@ -1,0 +1,66 @@
+{
+  "id": "messy-site",
+  "name": "Neglected shop site with mixed issues",
+  "target": "https://messy-site.test/",
+  "recordedAt": "2026-09-20T09:25:00.000Z",
+  "notes": [
+    "Synthetic fixture. Not a recording of a real company.",
+    "No HTTPS redirect, no security headers, cookies without Secure, privacy link returns 404, broken internal links, missing lang and alt attributes.",
+    "Expected outcome: six review findings, seven informational findings, zero critical."
+  ],
+  "responses": [
+    {
+      "url": "http://messy-site.test/",
+      "status": 200,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "server": "cloudflare"
+      },
+      "body": "<html><head><title>Shop</title></head><body><p>Please use <a href='https://messy-site.test/'>the secure version</a>.</p></body></html>"
+    },
+    {
+      "url": "https://messy-site.test/",
+      "status": 200,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "server": "cloudflare",
+        "x-powered-by": "Express"
+      },
+      "setCookie": [
+        "session=redacted-fixture-value; Path=/",
+        "tracking=redacted-fixture-value; Path=/; SameSite=Lax"
+      ],
+      "body": "<html><head><meta charset='utf-8'><title>Shop — Muster</title><link rel='stylesheet' href='/wp-content/themes/shop/style.css'><script src='/js/jquery-3.7.1.min.js'></script><script async src='https://www.googletagmanager.com/gtag/js?id=G-XXXX'></script></head><body><nav><a href='/privacy'>Privacy</a><a href='/shop'>Shop</a><a href='/old-page'>Sale</a><a href='/about'>About</a><a href='/contact'>Contact</a></nav><main><img src='/img/a.jpg'><img src='/img/b.jpg' alt='Product'><img src='/img/c.jpg'></main><footer><a href='/privacy'>Privacybeleid</a></footer></body></html>"
+    },
+    {
+      "url": "https://messy-site.test/privacy",
+      "status": 404,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html><head><title>Not found</title></head><body><h1>404</h1></body></html>"
+    },
+    {
+      "url": "https://messy-site.test/shop",
+      "status": 404,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html><head><title>Not found</title></head><body><h1>404</h1></body></html>"
+    },
+    {
+      "url": "https://messy-site.test/old-page",
+      "status": 404,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html><head><title>Not found</title></head><body><h1>404</h1></body></html>"
+    },
+    {
+      "url": "https://messy-site.test/about",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html><head><title>About</title></head><body><h1>About</h1></body></html>"
+    },
+    {
+      "url": "https://messy-site.test/contact",
+      "status": 500,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html><head><title>Error</title></head><body><h1>Server error</h1></body></html>"
+    }
+  ]
+}

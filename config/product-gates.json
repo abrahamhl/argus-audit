@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "lastUpdated": "2026-09-22",
+  "gates": [
+    {
+      "id": "product-truth",
+      "name": "PRODUCT TRUTH",
+      "status": "OPEN",
+      "x": "The tool identifies reproducible public website findings.",
+      "y": "Fixture tests plus at least one live pilot finding reproduced independently by a human.",
+      "z": "Deterministic scanners + evidence model.",
+      "evidenceRequired": [
+        "Deterministic CI green on fixture-backed tests.",
+        "A live audit of a target the operator is authorised to audit.",
+        "A second person follows the 'How to reproduce' steps and observes the same result."
+      ],
+      "currentEvidence": [
+        "59 deterministic core tests + 8 worker tests, all fixture-backed (see README).",
+        "No live pilot has been executed yet. Gate stays OPEN until one is documented."
+      ]
+    },
+    {
+      "id": "user-value",
+      "name": "USER VALUE",
+      "status": "OPEN",
+      "x": "A business owner understands what needs attention faster than with the raw technical output.",
+      "y": "Measured baseline-vs-Argus task study (time-to-understanding, comprehension questions).",
+      "z": "Progressive SIMPLE → ENGINEER evidence design.",
+      "evidenceRequired": [
+        "A small task study with real non-technical participants.",
+        "Baseline = raw tool output (for example curl output) vs Argus reports.",
+        "Recorded measurements and participant feedback."
+      ],
+      "currentEvidence": [
+        "Three report renderers implemented (SIMPLE / ENGINEER / CLIENT) with progressive disclosure.",
+        "No study has been run. Gate stays OPEN."
+      ]
+    },
+    {
+      "id": "commercial-signal",
+      "name": "COMMERCIAL SIGNAL",
+      "status": "BLOCKED",
+      "x": "Businesses request or pay for deeper analysis/remediation.",
+      "y": "Real pilot/conversion data only. No invented demand.",
+      "z": "Free snapshot → human-assisted paid audit.",
+      "evidenceRequired": [
+        "At least one documented request or payment for a deeper audit.",
+        "Conversion data recorded from real interactions only."
+      ],
+      "currentEvidence": [
+        "No billing, no accounts, no contact flow implemented in V0.",
+        "Gate begins BLOCKED. Do not unblock without real pilot data."
+      ],
+      "blockedUntil": "Real pilot interactions exist and are recorded."
+    }
+  ]
+}

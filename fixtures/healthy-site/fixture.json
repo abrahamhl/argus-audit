@@ -1,0 +1,66 @@
+{
+  "id": "healthy-site",
+  "name": "Healthy site (all key controls observed)",
+  "target": "https://healthy-site.test/",
+  "recordedAt": "2026-09-20T09:15:00.000Z",
+  "notes": [
+    "Synthetic fixture. Not a recording of a real company.",
+    "HTTPS enforced, HSTS + CSP + XFO + XCTO + Referrer-Policy present, privacy page linked and reachable, consent tool indicator present, no broken sampled links.",
+    "Expected outcome: one informational finding (Permissions-Policy not observed)."
+  ],
+  "responses": [
+    {
+      "url": "http://healthy-site.test/",
+      "status": 301,
+      "headers": {
+        "location": "https://healthy-site.test/",
+        "content-type": "text/html"
+      },
+      "body": ""
+    },
+    {
+      "url": "https://healthy-site.test/",
+      "status": 200,
+      "headers": {
+        "content-type": "text/html; charset=utf-8",
+        "strict-transport-security": "max-age=63072000; includeSubDomains",
+        "content-security-policy": "default-src 'self'; script-src 'self'; object-src 'none'; frame-ancestors 'self'",
+        "x-content-type-options": "nosniff",
+        "referrer-policy": "strict-origin-when-cross-origin",
+        "x-frame-options": "DENY",
+        "server": "nginx"
+      },
+      "body": "<!doctype html><html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><meta name='generator' content='WordPress 6.8'><title>Acme Consulting — Home</title><script src='https://cdn.healthy-site.test/klaro.js'></script><link rel='stylesheet' href='/assets/site.css'></head><body><header><a href='/about'>About us</a><a href='/contact'>Contact</a></header><main><h1>Welcome</h1><p>We respect your privacy. Cookie preferences are managed with Klaro.</p><img src='/assets/hero.jpg' alt='Team at work'><img src='/assets/logo.svg' alt=''></main><footer><a href='/privacy-policy'>Privacy policy</a><a href='/terms'>Terms of use</a><a href='/accessibility'>Accessibility statement</a></footer></body></html>"
+    },
+    {
+      "url": "https://healthy-site.test/about",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='en'><head><title>About — Acme</title></head><body><h1>About us</h1></body></html>"
+    },
+    {
+      "url": "https://healthy-site.test/contact",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='en'><head><title>Contact — Acme</title></head><body><h1>Contact</h1></body></html>"
+    },
+    {
+      "url": "https://healthy-site.test/privacy-policy",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='en'><head><title>Privacy policy — Acme</title></head><body><h1>Privacy policy</h1><p>How we handle personal data.</p></body></html>"
+    },
+    {
+      "url": "https://healthy-site.test/terms",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='en'><head><title>Terms — Acme</title></head><body><h1>Terms of use</h1></body></html>"
+    },
+    {
+      "url": "https://healthy-site.test/accessibility",
+      "status": 200,
+      "headers": { "content-type": "text/html; charset=utf-8" },
+      "body": "<html lang='en'><head><title>Accessibility — Acme</title></head><body><h1>Accessibility statement</h1></body></html>"
+    }
+  ]
+}

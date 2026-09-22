@@ -1,0 +1,22 @@
+{
+  "name": "argus-audit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Evidence-first passive website audit MVP. Sibling of eye-of-argus. V0: single-domain passive public-surface checks with SIMPLE/ENGINEER/CLIENT reports.",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r test",
+    "test:live": "pnpm --filter @argus-audit/core test:live",
+    "build": "pnpm --filter @argus-audit/web build",
+    "build:worker": "pnpm --filter @argus-audit/worker dry-run",
+    "verify": "pnpm typecheck && pnpm test && pnpm build && pnpm build:worker",
+    "dev:worker": "pnpm --filter @argus-audit/worker dev",
+    "dev:worker:fixture": "pnpm --filter @argus-audit/worker dev:fixture",
+    "dev:web": "pnpm --filter @argus-audit/web dev",
+    "deploy": "pnpm build && pnpm --filter @argus-audit/worker deploy"
+  }
+}

@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "currency": "USD",
+  "lastVerifiedAt": "2026-09-22",
+  "notes": [
+    "Machine-readable infrastructure-cost registry. No cost or price claim may be hard-coded into marketing pages; this file is the single source of truth.",
+    "Values were read from the provider documentation on lastVerifiedAt. Free tiers change; re-verify before making external claims.",
+    "Entries marked verification=unverified were included for completeness and were NOT confirmed against provider docs in this repository's history."
+  ],
+  "entries": [
+    {
+      "provider": "Cloudflare",
+      "resource": "Workers (Free plan)",
+      "freeAllowance": "100,000 requests/day; 10 ms CPU per invocation",
+      "unitCost": "$0 while within the free allowance. Paid plan: $5/month includes 10M requests + 30M CPU-ms, then $0.30/M requests and $0.02/M CPU-ms.",
+      "upgradeTrigger": "Sustained >100k audit/API requests per day, or a single audit needing >10 ms CPU in the Worker itself (network wait is not CPU).",
+      "fallback": "Reduce request count (cache static assets, tighten rate limits), or move to the $5/month Workers Paid plan.",
+      "source": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented"
+    },
+    {
+      "provider": "Cloudflare",
+      "resource": "Workers static assets",
+      "freeAllowance": "Requests to static assets are free and unlimited",
+      "unitCost": "$0",
+      "upgradeTrigger": "Not applicable for asset requests themselves",
+      "fallback": "Not applicable",
+      "source": "https://developers.cloudflare.com/workers/platform/pricing/",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented"
+    },
+    {
+      "provider": "Cloudflare",
+      "resource": "D1 (Free plan)",
+      "freeAllowance": "5 million rows read/day; 100,000 rows written/day; 5 GB total storage",
+      "unitCost": "Paid plan: first 25B rows read/month, 50M rows written/month and 5 GB included; then $0.001/M rows read, $1.00/M rows written, $0.75/GB-month.",
+      "upgradeTrigger": "Saved audits / share links (V0.4) exceeding 100k writes/day or 5 GB.",
+      "fallback": "Reports are downloadable client-side; storage is optional. Not wired in V0.",
+      "source": "https://developers.cloudflare.com/workers/platform/pricing/#d1",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented"
+    },
+    {
+      "provider": "Cloudflare",
+      "resource": "R2 (Free tier)",
+      "freeAllowance": "10 GB-month storage; 1M Class A ops/month; 10M Class B ops/month; free egress",
+      "unitCost": "Standard storage: $0.015/GB-month, $4.50/M Class A, $0.36/M Class B after the free tier.",
+      "upgradeTrigger": "Storing full HTML snapshots or generated PDFs beyond 10 GB-month (V1+ report artifacts).",
+      "fallback": "Keep artifacts in memory / client download; R2 only when durable artifacts are genuinely required. Not wired in V0.",
+      "source": "https://developers.cloudflare.com/r2/pricing/",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented"
+    },
+    {
+      "provider": "Cloudflare",
+      "resource": "Turnstile (Free plan)",
+      "freeAllowance": "Unlimited challenges/verifications; up to 20 widgets; 10 hostnames per widget",
+      "unitCost": "$0 (Enterprise plan is contact-sales)",
+      "upgradeTrigger": "More than 20 widgets or >10 hostnames per widget, or Enterprise features.",
+      "fallback": "Already optional: when TURNSTILE_SECRET is absent the Worker skips verification and relies on rate limits.",
+      "source": "https://developers.cloudflare.com/turnstile/plans/",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented"
+    },
+    {
+      "provider": "Cloudflare",
+      "resource": "Workers AI",
+      "freeAllowance": "10,000 Neurons per day",
+      "unitCost": "$0.011 per 1,000 Neurons beyond the daily free allocation (Workers Paid required).",
+      "upgradeTrigger": "AI explanations enabled (AI_EXPLANATIONS=on) and used beyond ~10k Neurons/day.",
+      "fallback": "AI is optional and off by default. Without it, deterministic template text is used; the audit never depends on AI.",
+      "source": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented",
+      "notes": "Default model @cf/meta/llama-3.1-8b-instruct-fp8-fast: about 4,119 Neurons per 1M input tokens and 34,868 per 1M output tokens (one short rephrase call per finding)."
+    },
+    {
+      "provider": "GitHub",
+      "resource": "GitHub Actions (public repository)",
+      "freeAllowance": "Unlimited standard-runner minutes for public repositories; 500 MB artifact storage",
+      "unitCost": "$0 for public repositories on standard runners",
+      "upgradeTrigger": "Repository made private (then 2,000 free minutes/month on GitHub Free).",
+      "fallback": "Run `pnpm verify` locally; the CI workflow is portable.",
+      "source": "https://docs.github.com/en/billing/concepts/product-billing/github-actions",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented"
+    },
+    {
+      "provider": "PostHog",
+      "resource": "Product analytics (free tier)",
+      "freeAllowance": "1M events/month; 5k session replays; resets monthly",
+      "unitCost": "Usage-based beyond the free tier; billing limits can be set to $0",
+      "upgradeTrigger": "Enabling analytics beyond 1M events/month.",
+      "fallback": "Not wired in V0 and disabled by default. If enabled later it must be consent-aware.",
+      "source": "https://posthog.com/pricing",
+      "lastVerifiedAt": "2026-09-22",
+      "verification": "documented"
+    },
+    {
+      "provider": "Stripe",
+      "resource": "Checkout / Payment Links",
+      "freeAllowance": "No monthly fee",
+      "unitCost": "Per successful card charge (region-dependent, e.g. standard EU cards ~1.5% + EUR 0.25). Confirm current rates before enabling billing.",
+      "upgradeTrigger": "Enabling paid human-assisted audits (V1).",
+      "fallback": "Manual invoicing during early pilots; Stripe can be added without changing the audit architecture.",
+      "source": "https://stripe.com/pricing",
+      "lastVerifiedAt": null,
+      "verification": "unverified"
+    }
+  ]
+}
