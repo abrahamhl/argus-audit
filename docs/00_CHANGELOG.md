@@ -47,6 +47,14 @@ adjetivos.
 - Smoke test real: worker en modo fixture servido por HTTP; `/api/health` OK;
   auditorías de `healthy-site.test` (1 finding) y `messy-site.test` (13).
 
+### Roto y arreglado
+
+- **CI run #1 (push): falló el paso "Secret scan".** El grep encontraba su
+  propio comando dentro de `.github/workflows/ci.yml` y se marcaba como
+  referencia a secreto. Arreglo: `--exclude-dir=.github` (además de `.git`,
+  `node_modules`, `dist`). La funcionalidad nunca estuvo afectada; solo el
+  detector.
+
 ### Decisiones tomadas (y por qué)
 
 - **Reset por severidad de `x-frame-options`**: si existe CSP con

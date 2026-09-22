@@ -45,6 +45,7 @@ jobs:
       - name: Secret scan (basic)
         run: |
           if grep -RInE "(TURNSTILE_SECRET|AI_API_KEY|STRIPE_SECRET|sk_live_|gho_)" \
+              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.github \
               --include='*.ts' --include='*.tsx' --include='*.json' --include='*.jsonc' \
               --include='*.md' --include='*.yml' . \
               | grep -vE "\.dev\.vars\.example|docs/THREAT_MODEL|SECURITY\.md|README\.md|src/index\.ts|src/turnstile\.ts|wrangler\.jsonc|config/infra-costs\.json"; then
