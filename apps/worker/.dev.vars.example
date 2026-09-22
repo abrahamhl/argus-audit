@@ -1,0 +1,13 @@
+# Copy to .dev.vars (gitignored) for local secret injection.
+# Never commit real values.
+
+# Optional: require Cloudflare Turnstile verification for POST /api/audit
+# TURNSTILE_SECRET=0x00000000000000000000000000000000
+
+# Optional: allow a cross-origin frontend during local experiments
+# ALLOWED_ORIGIN=http://localhost:5173
+
+# Optional overrides (defaults shown)
+# RATE_LIMIT_MAX=5
+# RATE_LIMIT_WINDOW_MS=60000
+# AI_MODEL=@cf/meta/llama-3.1-8b-instruct
