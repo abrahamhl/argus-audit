@@ -46,6 +46,10 @@ pnpm verify                 # typecheck + tests + build + dry-run
 | `fixtures/` | 3 fixtures deterministas (healthy / missing-headers / messy) |
 | `config/infra-costs.json` | Registro machine-readable de costes free-tier (verificado 2026-09-22) |
 | `config/product-gates.json` | Las 3 puertas XYZ (PRODUCT TRUTH / USER VALUE / COMMERCIAL SIGNAL: BLOCKED) |
+| `docs/CONSOLIDATION_MATRIX.md` | Matriz de consolidación: donantes, tests reproducidos, veredictos KEEP/PORT/REDESIGN/RETIRE |
+| `docs/STATE.md` | Estado canónico: live URL, SHA, ledger de verificaciones |
+| `docs/DECISIONS.md` | Decisiones con fecha, motivo y disparador de revisión |
+| `docs/OPEN_LOOPS.md` | Bucles abiertos, bloqueos del owner y próximos PRs |
 | `docs/THREAT_MODEL.md` | Modelo de amenazas + checklist pre-despliegue |
 | `docs/EVIDENCE_CONTRACT.md` | Contrato de evidencia y estados |
 | `docs/ARCHITECTURE.md` | Arquitectura y modos de ejecución |

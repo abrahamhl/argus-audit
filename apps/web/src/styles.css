@@ -315,6 +315,24 @@ code {
   background: color-mix(in srgb, var(--accent) 8%, transparent);
 }
 
+.ack {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0.65rem 0 0.35rem;
+  font-size: 0.92rem;
+  cursor: pointer;
+  min-height: var(--tap);
+}
+
+.ack input {
+  width: 20px;
+  height: 20px;
+  margin: 0.15rem 0 0;
+  accent-color: var(--accent);
+  flex: 0 0 auto;
+}
+
 .chips {
   display: inline-flex;
   flex-wrap: wrap;

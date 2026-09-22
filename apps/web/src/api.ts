@@ -10,6 +10,7 @@ export interface FixtureSummary {
 export interface HealthInfo {
   mode: 'live' | 'fixture';
   aiExplanations: boolean;
+  turnstileSiteKey: string | null;
   methodology: string;
   fixtures: FixtureSummary[];
 }
@@ -31,7 +32,7 @@ export async function fetchHealth(): Promise<HealthInfo | null> {
 }
 
 export async function requestAudit(url: string, turnstileToken?: string): Promise<AuditResult> {
-  const body: Record<string, string> = { url };
+  const body: Record<string, string | boolean> = { url, acknowledged: true };
   if (turnstileToken !== undefined && turnstileToken.length > 0) {
     body['turnstileToken'] = turnstileToken;
   }

@@ -10,11 +10,12 @@ interface IdleViewProps {
 export function IdleView({ demo, onRun }: IdleViewProps): ReactNode {
   const [url, setUrl] = useState('');
   const [token, setToken] = useState<string | null>(null);
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+  const [acknowledged, setAcknowledged] = useState(false);
+  const siteKey = demo?.turnstileSiteKey ?? undefined;
 
   function submit(event: FormEvent): void {
     event.preventDefault();
-    if (url.trim().length === 0) return;
+    if (url.trim().length === 0 || !acknowledged) return;
     onRun(url.trim(), token ?? undefined);
   }
 
@@ -42,13 +43,20 @@ export function IdleView({ demo, onRun }: IdleViewProps): ReactNode {
               onChange={(event) => setUrl(event.target.value)}
               aria-describedby="target-hint"
             />
-            <button type="submit" className="btn btn-primary" disabled={url.trim().length === 0}>
+            <button type="submit" className="btn btn-primary" disabled={url.trim().length === 0 || !acknowledged}>
               Run passive audit
             </button>
           </div>
+          <label className="ack">
+            <input
+              type="checkbox"
+              checked={acknowledged}
+              onChange={(event) => setAcknowledged(event.target.checked)}
+            />
+            <span>I confirm I am authorised to audit this website.</span>
+          </label>
           <p id="target-hint" className="muted small">
-            Only websites you are authorised to audit. Checks are passive and public-surface only: no logins, no
-            exploitation, no private areas.
+            Passive public-surface checks only: no logins, no exploitation, no private areas.
           </p>
           {siteKey !== undefined && siteKey.length > 0 ? (
             <TurnstileWidget siteKey={siteKey} onToken={setToken} />
