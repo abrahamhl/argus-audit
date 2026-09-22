@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: typecheck · tests · build · worker dry-run
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm -r typecheck
+
+      - name: Deterministic tests (offline, fixture-backed)
+        run: pnpm -r test
+
+      - name: Web production build
+        run: pnpm --filter @argus-audit/web build
+
+      - name: Worker bundle dry-run
+        run: pnpm --filter @argus-audit/worker dry-run
+
+      - name: Secret scan (basic)
+        run: |
+          if grep -RInE "(TURNSTILE_SECRET|AI_API_KEY|STRIPE_SECRET|sk_live_|gho_)" \
+              --include='*.ts' --include='*.tsx' --include='*.json' --include='*.jsonc' \
+              --include='*.md' --include='*.yml' . \
+              | grep -vE "\.dev\.vars\.example|docs/THREAT_MODEL|SECURITY\.md|README\.md|src/index\.ts|src/turnstile\.ts|wrangler\.jsonc|config/infra-costs\.json"; then
+            echo "Potential secret reference found"; exit 1
+          fi
+          echo "No committed secret values detected"
