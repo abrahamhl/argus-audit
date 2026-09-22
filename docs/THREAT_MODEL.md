@@ -57,6 +57,8 @@ browser ──(same-origin /api)──► Worker ──(validated fetch)──�
 | T12 | Supply chain | Zero runtime dependencies in core; pinned lockfile; only TypeScript/Vite/React/Wrangler/Vitest as dev/UI deps; pnpm build-script allowlist | Standard npm ecosystem risk |
 | T13 | Cross-origin API abuse from a browser | Explicit origin policy: same-host origin or configured `ALLOWED_ORIGIN`; otherwise 403 | Direct non-browser clients still allowed by design (they get no CORS benefit anyway) |
 | T14 | Unauthorised scanning misuse | Mandatory `acknowledged: true` scope acknowledgement in the API contract and an explicit UI checkbox; audit trail includes timestamps and target in every report | Acknowledgement does not verify authorisation; the operator remains responsible |
+| T15 | Third-party DNS resolver dependency | DNS-over-HTTPS with a 5 s timeout per query, ≤6 queries per audit; fixture resolver offline in CI; SERVFAIL/NXDOMAIN never converted into absence claims except where the status itself is the observation (NXDOMAIN on `_dmarc`), and `NXDOMAIN`/`SERVFAIL`/`ERROR` are recorded as evidence states, not findings | Resolver outages yield `ERROR` evidence and no email findings — explicit, never guessed |
+| T16 | security.txt contact harvesting | The scanner stores only field **counts** and the expiry — Contact/Policy values are parsed but not written into evidence | Report readers can re-fetch the public file themselves |
 
 ## 5. Explicitly out of scope for V0 (by design)
 

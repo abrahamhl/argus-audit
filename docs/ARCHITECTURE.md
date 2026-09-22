@@ -16,7 +16,8 @@
         request budget, body cap + sha-256
                         ▼
   scanners (fixed order): reachability → transport-security →
-  security-headers → privacy-pages → broken-links → frontend-tech
+  security-headers → privacy-pages → broken-links → frontend-tech →
+  dns.records (DoH | fixture resolver) → security.txt
                         ▼
               EvidenceRecord[] (states, provenance, limitations)
                         ▼
@@ -36,8 +37,9 @@
 | Contracts | `evidence.ts`, `finding.ts`, `contracts.ts`, `states.ts`, `version.ts`, `evidence-provenance.ts` |
 | Boundary | `url-guard.ts` |
 | Transport | `transport/types.ts`, `transport/live.ts`, `transport/fixture.ts`, `transport/client.ts` |
-| Scanners | `scanners/*.ts` (6 scanners + shared homepage helper) |
-| Rules | `rules/types.ts`, `rules/transport.ts`, `rules/headers.ts`, `rules/privacy.ts`, `rules/links.ts`, `rules/accessibility.ts`, `rules/index.ts` |
+| DNS | `dns/types.ts`, `dns/doh.ts` (RFC 8484 JSON over `fetch`), `dns/fixture.ts` |
+| Scanners | `scanners/*.ts` (8 scanners + shared homepage helper) |
+| Rules | `rules/types.ts`, `rules/transport.ts`, `rules/headers.ts`, `rules/privacy.ts`, `rules/email.ts`, `rules/security.ts`, `rules/links.ts`, `rules/accessibility.ts`, `rules/index.ts` |
 | Reports | `report/summary.ts`, `report/simple.ts`, `report/engineer.ts`, `report/client.ts` |
 | Optional AI | `explain/types.ts` (contract + no-op template explainer) |
 | Orchestration | `audit.ts` (`runAudit`) |
@@ -62,16 +64,20 @@ and the web app (type-only imports, erased at build time).
 
 ### `apps/web`
 
-React 19 + Vite 8, no router, no state library, one stylesheet.
+React 19 + Vite 8, no router dependency (tiny history router), no state
+library, one stylesheet. Five routed surfaces: `/` product, `/audit` live
+auditor, `/lab` labelled simulator, `/method` runtime-generated methodology,
+`/architecture` pipeline and boundaries.
 
-- `App.tsx` — lifecycle (`idle → running → done | error`), theme, health probe.
-- `components/IdleView.tsx` — landing, authorisation notice, demo targets.
-- `components/RunningView.tsx` — truthful progress (elapsed time + checklist,
-  no fake stage advancement).
+- `App.tsx` — shell, theme, health probe, audit lifecycle shared by pages.
+- `router.tsx` — `useRoute` + `RouteLink` (real anchors, SPA interception).
+- `components/TopBar.tsx` — numbered nav with `aria-current`, LIVE/DEMO badge.
+- `components/ProcessViz.tsx` — truthful pipeline visualization; shows real
+  aggregated numbers after a run and says "no live telemetry" while running.
+- `pages/*` — the five surfaces.
 - `components/ResultView.tsx` — summary, findings list, detail pane.
 - `components/FindingDetail.tsx` — the six required sections.
-- `components/EvidenceTrace.tsx` — **the wow feature**: Finding → Rule →
-  Observation → Raw evidence, keyboard accessible, reduced-motion aware.
+- `components/EvidenceTrace.tsx` — Finding → Rule → Observation → Raw evidence.
 - `components/ReportPanel.tsx` — SIMPLE/ENGINEER/CLIENT tabs + copy/download/print.
 
 ## Runtime modes

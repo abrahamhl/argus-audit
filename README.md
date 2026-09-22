@@ -36,6 +36,26 @@ principles — *Evidence → Provenance → Freshness → Confidence → Finding
 | `privacy.pages` | Privacy / terms / legal / contact / accessibility link presence in delivered HTML; reachability of the privacy link; consent-tool name indicators |
 | `links.broken` | Bounded sample (max 10) of internal links, HEAD then GET confirmation, rate-limit-aware |
 | `frontend.tech` | Technology indicators from HTML/headers (all `INFERRED`); basic accessibility signals (lang, viewport, img alt) |
+| `dns.records` | A, AAAA, MX, TXT (SPF), CAA and _dmarc TXT through DNS-over-HTTPS; every answer recorded as evidence |
+| `security.txt.check` | RFC 9116 file at `/.well-known/security.txt` and `/security.txt`; Contact/Expires parsed (no addresses stored) |
+
+Rules built on that evidence: transport (unreachable, no redirect, HSTS),
+headers (CSP, framing protection, XCTO, referrer, permissions), privacy (no
+privacy link, unreachable privacy page, consent indicator, cookie flags), email
+DNS (SPF missing/weak, DMARC missing/`p=none`, CAA missing), security.txt
+(missing/expired), links (broken sample) and accessibility (html lang, image
+alt). `GET /api/methodology` lists the exact set at runtime — currently 8
+scanners and 22 rules, all deterministic.
+
+## Console surfaces
+
+| Route | Purpose |
+|---|---|
+| `/` | Product presentation, pipeline overview, honest gate status |
+| `/audit` | Live passive auditor for one authorised website |
+| `/lab` | **Simulator**: replays the recorded fixtures; clearly labelled, contacts nothing |
+| `/method` | Methodology generated from the runtime (states, scanners, rules, limits) |
+| `/architecture` | Pipeline diagram, trust boundaries, adapter boundaries (TLS, DNS, AI) |
 
 ## What V0 deliberately does not do
 

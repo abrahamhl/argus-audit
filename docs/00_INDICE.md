@@ -39,7 +39,7 @@ pnpm verify                 # typecheck + tests + build + dry-run
 
 | Ruta | Contenido |
 |---|---|
-| `packages/core/src` | Motor: contrato de evidencia, guardas URL, transportes, 6 escáneres, reglas, 3 informes |
+| `packages/core/src` | Motor: contrato de evidencia, guardas URL, transportes, 8 escáneres (incluye DNS/DoH y security.txt), 22 reglas, 3 informes |
 | `packages/core/src/audit.ts` | Orquestador `runAudit` |
 | `apps/worker` | Cloudflare Worker: API, límites, Turnstile, modo fixture |
 | `apps/web` | UI React+Vite con Evidence Trace y paneles de informe |
@@ -47,10 +47,16 @@ pnpm verify                 # typecheck + tests + build + dry-run
 | `config/infra-costs.json` | Registro machine-readable de costes free-tier (verificado 2026-09-22) |
 | `config/product-gates.json` | Las 3 puertas XYZ (PRODUCT TRUTH / USER VALUE / COMMERCIAL SIGNAL: BLOCKED) |
 | `docs/CONSOLIDATION_MATRIX.md` | Matriz de consolidación: donantes, tests reproducidos, veredictos KEEP/PORT/REDESIGN/RETIRE |
-| `docs/STATE.md` | Estado canónico: live URL, SHA, ledger de verificaciones |
+| `docs/LEGACY_MIGRATION.md` | Qué hacer con web-exposure-scan, argus-bice, gh-pages y argus (solo recomendaciones) |
+| `docs/STATE.md` | Estado canónico: live URL, version IDs, ledger de verificaciones y session log |
 | `docs/DECISIONS.md` | Decisiones con fecha, motivo y disparador de revisión |
 | `docs/OPEN_LOOPS.md` | Bucles abiertos, bloqueos del owner y próximos PRs |
 | `docs/THREAT_MODEL.md` | Modelo de amenazas + checklist pre-despliegue |
+
+## Superficies de la consola
+
+- `/` producto · `/audit` auditor live · `/lab` simulador etiquetado ·
+  `/method` metodología generada por el runtime · `/architecture` arquitectura
 | `docs/EVIDENCE_CONTRACT.md` | Contrato de evidencia y estados |
 | `docs/ARCHITECTURE.md` | Arquitectura y modos de ejecución |
 | `docs/PRODUCT_GATES.md` | Explicación de las puertas y cómo cerrarlas |

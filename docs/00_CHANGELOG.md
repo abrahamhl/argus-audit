@@ -5,6 +5,56 @@ adjetivos.
 
 ---
 
+## 2026-09-22 — PR-03: portes donantes (DNS/SPF/DMARC, security.txt)
+
+### DONE
+
+- **DNS-over-HTTPS adapter** (`packages/core/src/dns/`): `DohResolver` (RFC 8484
+  JSON sobre `fetch`, timeout 5 s) y `FixtureDnsResolver` offline. Workers no
+  puede hacer DNS UDP; el DoH es la única vía pasiva y es la implementada.
+- **Scanner `dns.records`**: A, AAAA, MX, TXT (SPF), CAA y `_dmarc` TXT; cada
+  respuesta es una evidencia con estado propio (NXDOMAIN/SERVFAIL/ERROR no se
+  convierten en "ausencia" salvo que el propio estado sea la observación).
+- **Reglas de email**: SPF ausente, SPF débil (`~all/+all/?all`), DMARC ausente,
+  DMARC `p=none`, CAA ausente (RFC 7208/7489/8659). Sin afirmaciones legales.
+- **security.txt (RFC 9116)**: scanner con dos rutas estándar y parser de
+  Contact/Expires; reglas de ausente y expirado. Los contactos NO se guardan
+  (solo contadores y expiración).
+- **Worker**: resuelve con DoH en modo live y con fixtures en modo demo/lab.
+- Fixtures ampliadas con DNS para los tres escenarios y security.txt válido en
+  `healthy-site`.
+
+### VERIFIED
+
+- **81 tests deterministas, 0 fallos** (67 core + 14 worker).
+- Verificación live en producción tras el deploy: `example.com` →
+  SPF presente `-all`, DMARC presente `p=reject` (sin findings de email, correcto),
+  CAA ausente y security.txt ausente como informativos; 6 consultas DNS + resumen
+  como evidencia OBSERVED. Metodología live **0.3.0**.
+- Smoke live: 9/9 contra Version ID `c7c75d67`.
+
+---
+
+## 2026-09-22 — PR-02: consola de operador
+
+### DONE
+
+- Router propio (sin dependencias) y cinco superficies: `/`, `/audit`, `/lab`,
+  `/method`, `/architecture`; navegación con `aria-current` y badge LIVE/DEMO.
+- `ProcessViz`: visualización truthful del pipeline TARGET → OBSERVE → PROVE →
+  DECIDE → REPORT (+ FIX/VERIFY marcados "not implemented"). Con resultado
+  muestra números **reales** por etapa; en ejecución declara que no hay telemetría
+  en vivo (sin animación falsa).
+- `/lab` como **simulador etiquetado**: replay de fixtures, banner claro, nunca
+  contacta sitios. `/method` se genera desde `/api/methodology` (misma fuente que
+  el runtime). `/architecture` documenta límites y fronteras de adaptador.
+- `FixtureTransport` calcula ahora el SHA-256 del cuerpo también en modo demo
+  (PROVE real en el lab).
+- Verificado en navegador real a 1440 px y 375 px en local y en producción:
+  0 errores de consola; trace con JSON en bruto; 15 reglas listadas entonces.
+
+---
+
 ## 2026-09-22 — Consolidación, fase 0 + PR-01 (production hardening)
 
 ### DONE

@@ -28,9 +28,27 @@ Verdicts: **KEEP** (already canonical) · **PORT** (reimplement under our
 contracts) · **REDESIGN** (concept only, different implementation) · **RETIRE**
 (do not carry forward).
 
+### Port status after this consolidation
+
+| Capability | Status | Landed |
+|---|---|---|
+| DNS / SPF / DMARC / CAA | **PORTED** | PR-03 (`packages/core/src/dns/*`, `scanners/dns.ts`, `rules/email.ts`); live-verified on `example.com` |
+| security.txt (RFC 9116) | **PORTED** | PR-03 (`scanners/security-txt.ts`, `rules/security.ts`); contacts not stored |
+| Evidence canonical hash | **PORTED** | PR-01 (`evidenceHash` in every audit + ENGINEER report) |
+| AI claim/policy gate | **PORTED (redesigned)** | PR-01 runtime forbidden-claim validator; AI still off by default |
+| WAF/4xx absence suppression | **PORTED** | PR-01 (`responseUsable`, `blocked` homepage state) |
+| Scope acknowledgement | **PORTED (concept)** | PR-01 API contract + UI checkbox |
+| Console visual language | **REDESIGNED** | PR-02 own implementation; no donor text/numbers |
+| Retest / proof + signing | **DEFERRED** | PR-04 with D1 persistence; do not fake proof |
+| Multilingual templates | **DEFERRED** | i18n loop, only if pilots require |
+| Donor service catalog / prices | **RETIRED from public repo** | documented in `DECISIONS.md` D05 |
+| Simulator fabricated claims/data | **RETIRED** | catalogued in Legacy migration plan |
+
+### Full matrix
+
 | Capability | Source | Evidence | Production value | Workers portability | Legal/license | Verdict |
 |---|---|---|---|---|---|---|
-| HTTP reachability + redirect chain | argus `collectors/http.ts:9-119`; ours live | donor 1 offline test + header rules tests; ours 59 core tests | Core | Native `fetch`, manual redirects | Same owner; donor license ambiguous (ISC metadata vs "All rights reserved" README) | **KEEP** ours |
+| HTTP reachability + redirect chain | argus `collectors/http.ts:9-119`; ours live | donor 1 offline test + header rules tests; ours 67 core tests | Core | Native `fetch`, manual redirects | Same owner; donor license ambiguous (ISC metadata vs "All rights reserved" README) | **KEEP** ours |
 | Security headers | argus `rules.ts:98-331`; web-exposure `headers.js:5-100`; ours live | donor core tests; ours fixture tests | High | Pure logic | Same owner | **KEEP** ours; port value-adds: HSTS `max-age<180d` warning, `Server`/`X-Powered-By` version leak, suppress absence findings on 4xx/WAF-blocked root |
 | Cookies | ours (flags summary); web-exposure `headers.js:89-100` | ours tests | High | Pure | Same owner | **KEEP** ours (no values stored) |
 | TLS certificate inspection | argus `collectors/tls.ts` (not wired); web-exposure `checks/tls.js` (raw socket) | donor: offline-only tests, no rule consumes it | Medium (expiry/cipher) | **Not portable**: Workers cannot read peer cert / raw sockets | Same owner | **REDESIGN as adapter boundary**: worker keeps explicit `NOT_CHECKED`; optional Node/local adapter later, never faked |

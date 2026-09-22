@@ -19,19 +19,16 @@ Status: `OPEN` · `BLOCKED (external)` · `NEXT PR` · `DONE`.
 
 | Loop | Status | Scope (closed cycle) |
 |---|---|---|
-| PR-01 production hardening | NEXT (this branch) | README truth + live URL/SHA, origin policy, acknowledgement, DO abuse guard + daily cap, Turnstile runtime key, source-map/secret verification, threat-model update, live smoke script, deploy. |
-| PR-02 operator console | NEXT | Routes `/`, `/audit`, `/lab`, `/method`, `/architecture`; truthful pipeline visualization; evidence trace preserved; reports preserved; mobile first. |
-| PR-03a DNS/SPF/DMARC via DoH | NEXT | DoH adapter + fixtures, SPF/DMARC/CAA rules, tests, reports include email-trust section. |
-| PR-03b security.txt | NEXT | RFC 9116 scanner + rule + fixtures. |
-| PR-03c evidence canonical hash + AI output validator | NEXT | `evidenceHash` on AuditResult, ENGINEER report shows it; runtime forbidden-phrase validation of AI text with fallback. |
-| Retest / proof | OPEN | Comparison engine (RESOLVED/IMPROVED/UNCHANGED/REGRESSED/UNVERIFIED) over stored audits; requires D1 share/save first. Do not fake proof. |
-| Share links / saved audits (D1) | OPEN | Encrypted-at-rest report JSON with expiry; no accounts; rate-limited writes. |
-| Location/radius discovery (V0.2) | OPEN | Provider adapter contract + MapLibre; only after PR-01/02/03 land and gates allow pilots. |
-| Billing (V1) | OPEN | Stripe Checkout after commercial signal exists; pricing stays out of the public repo. |
-| PostHog analytics | OPEN | Consent-aware, disabled by default; only after privacy review. |
-| Live progress telemetry | OPEN | If `/audit` progress is desired beyond process visualization: add `onProgress` events in core + SSE route; until then the UI says "process visualization". |
-| TLS adapter | OPEN | Node/local adapter outside Workers for certificate chain/expiry; never inside the Worker. |
-| i18n reports (ES/NL/EN) | OPEN | Only if pilot users require it; no prices/claims in templates. |
+| PR-01 production hardening | **DONE** (deployed `f3544168`) | README truth, origin policy, acknowledgement, DO abuse guard + daily cap, runtime Turnstile key, dist hygiene, smoke script |
+| PR-02 operator console | **DONE** (deployed `b3f3317e`) | Routed surfaces `/`, `/audit`, `/lab`, `/method`, `/architecture`; truthful pipeline; labelled simulator |
+| PR-03 donor ports (DNS/SPF/DMARC, security.txt, hashing, AI gate) | **DONE** (deployed `c7c75d67`, methodology 0.3.0) | DoH adapter + fixtures; email/CAA rules; RFC 9116 scanner; canonical evidence hash; AI claim validator |
+| PR-04 saved audits + retest/proof | NEXT | D1 persistence for audit records + share links with expiry; comparison engine (RESOLVED/IMPROVED/UNCHANGED/REGRESSED/UNVERIFIED) over two stored audits; no accounts; rate-limited writes; do not fake proof |
+| TLS adapter (Node/local) | OPEN | Certificate chain/expiry outside Workers; the Worker keeps `NOT_CHECKED` |
+| Location/radius discovery (V0.2 mode) | OPEN | Provider adapter contract + MapLibre; only after pilot gates move |
+| Billing (V1) | OPEN | Stripe Checkout after commercial signal exists; pricing stays out of the public repo |
+| PostHog analytics | OPEN | Consent-aware, disabled by default |
+| Live progress telemetry | OPEN | `onProgress` events in core + SSE route; until then the UI labels the pipeline as process visualization |
+| i18n reports (ES/NL/EN) | OPEN | Only if pilot users require it; no prices/claims in templates |
 
 ## Done in this session (for the log)
 

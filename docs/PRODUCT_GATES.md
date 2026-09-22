@@ -12,7 +12,7 @@ them. Gates are never edited to look better than the evidence.
 
 Current evidence:
 
-- 62 deterministic core tests + 14 worker tests, all fixture-backed and offline
+- 67 deterministic core tests + 14 worker tests, all fixture-backed and offline
   (plus a live smoke suite of 9 checks against the deployment).
 - End-to-end audits of three recorded fixtures with byte-identical repeat runs.
 - Claims guard prevents legal/fear phrasing in every report, including AI output.
