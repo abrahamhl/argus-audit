@@ -20,7 +20,7 @@ Last updated: 2026-09-22 (consolidation session 1, branch `consolidation/argus-m
 | Item | Value |
 |---|---|
 | Node / pnpm | v22.22.2 / 11.9.0 |
-| Wrangler | 4.136.2, authenticated as `2f.abraham@gmail.com` (account `a69615db8af24be4d36fa0ac0d80656b`) with workers write |
+| Wrangler | 4.136.2, authenticated as the owner account (details kept outside the repo) with workers write |
 | Turnstile | **Not configured.** No widget created/verified this session (needs owner Cloudflare API token or dashboard). Runtime site-key support is being added so no rebuild is needed later. |
 | Repo secrets | None committed; basic secret scan in CI |
 
@@ -89,5 +89,5 @@ Last updated: 2026-09-22 (consolidation session 1, branch `consolidation/argus-m
 - Windows host; Git may warn about LF→CRLF on first touch (`.gitattributes` added: `eol=lf`).
 - Donor worktrees live in `%TEMP%\opencode\donors\` (disposable; recreate with the
   commands in `CONSOLIDATION_MATRIX.md`).
-- Local donor `C:\Users\2fabr\portfolio-work\argus` remains untouched except
+- Local donor checkout of `argus` remains untouched except
   `git fetch`; worktrees are detached and read-only by policy.

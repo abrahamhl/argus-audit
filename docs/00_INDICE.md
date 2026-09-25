@@ -1,7 +1,7 @@
 # ÍNDICE — Argus Audit (V0)
 
 **Fecha:** 2026-09-22
-**Ruta local:** `C:\Users\2fabr\portfolio-work\argus-audit`
+**Ruta local:** tu checkout de `argus-audit`
 **Remoto:** https://github.com/abrahamhl/argus-audit
 **Rama de trabajo:** `build/v0-evidence-audit` (draft PR hacia `main`)
 
@@ -21,7 +21,7 @@ IA opcional, nunca fuente de verdad.
 ## Cómo arrancarlo
 
 ```powershell
-cd C:\Users\2fabr\portfolio-work\argus-audit
+cd argus-audit
 pnpm install
 
 # Demo offline (sin red, datos de fixtures) — dos terminales:
