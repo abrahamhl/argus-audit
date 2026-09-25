@@ -39,16 +39,32 @@ jobs:
       - name: Web production build
         run: pnpm --filter @argus-audit/web build
 
+      - name: Build hygiene (no source maps, no secret-like strings in dist)
+        run: |
+          if find apps/web/dist -name '*.map' | grep -q .; then
+            echo "Source maps found in dist"; exit 1
+          fi
+          if grep -RIlE "TURNSTILE_SECRET|sk_live_|gho_|BEGIN (RSA|OPENSSH|PRIVATE)" apps/web/dist; then
+            echo "Secret-like string found in client bundle"; exit 1
+          fi
+          echo "dist hygiene OK"
+
       - name: Worker bundle dry-run
         run: pnpm --filter @argus-audit/worker dry-run
 
       - name: Secret scan (basic)
         run: |
-          if grep -RInE "(TURNSTILE_SECRET|AI_API_KEY|STRIPE_SECRET|sk_live_|gho_)" \
-              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.github \
-              --include='*.ts' --include='*.tsx' --include='*.json' --include='*.jsonc' \
-              --include='*.md' --include='*.yml' . \
-              | grep -vE "\.dev\.vars\.example|docs/THREAT_MODEL|SECURITY\.md|README\.md|src/index\.ts|src/turnstile\.ts|wrangler\.jsonc|config/infra-costs\.json"; then
-            echo "Potential secret reference found"; exit 1
+          failed=0
+          # Known secret token shapes anywhere in the tracked tree.
+          if grep -RInE "(sk_live_[A-Za-z0-9]{10,}|gho_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|BEGIN (RSA|OPENSSH|EC|PRIVATE) KEY)" \
+              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist . ; then
+            echo "Secret-shaped token found"; failed=1
           fi
+          # Assignment patterns with a non-trivial value (documentation mentions of names are fine).
+          if grep -RInE "(TURNSTILE_SECRET|AI_API_KEY|STRIPE_SECRET|CLOUDFLARE_API_TOKEN)\s*[:=]\s*['\"]?[A-Za-z0-9_./+-]{16,}" \
+              --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=dist --exclude-dir=.github \
+              --include='*.ts' --include='*.tsx' --include='*.json' --include='*.jsonc' --include='*.yml' . ; then
+            echo "Secret assignment with a value found"; failed=1
+          fi
+          if [ "$failed" -ne 0 ]; then exit 1; fi
           echo "No committed secret values detected"

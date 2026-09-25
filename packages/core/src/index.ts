@@ -56,7 +56,14 @@ export { securityHeadersScanner, HEADER_SPECS, FRAME_PROTECTION_HEADER } from '.
 export { privacyPagesScanner } from './scanners/privacy-pages';
 export { brokenLinksScanner, sampleLinks } from './scanners/broken-links';
 export { frontendTechScanner } from './scanners/frontend-tech';
+export { dnsScanner, parseSpf, parseDmarc } from './scanners/dns';
+export { securityTxtScanner, parseSecurityTxt } from './scanners/security-txt';
 export { getHomepageHtml } from './scanners/shared';
+
+export type { DnsResolver, DnsResult, DnsRecordType, DnsStatus, DnsAnswer, FixtureDnsEntry } from './dns/types';
+export { unavailableDnsResolver } from './dns/types';
+export { DohResolver, type DohResolverOptions } from './dns/doh';
+export { FixtureDnsResolver } from './dns/fixture';
 
 export { evaluateRules, allRules, createEvidenceIndex } from './rules';
 export type { Rule, RuleContext, EvidenceIndex } from './rules/types';
@@ -76,5 +83,6 @@ export { renderEngineerReport } from './report/engineer';
 export { renderClientReport } from './report/client';
 
 export { templateExplainer, noExplainer, type ExplanationProvider, type ExplanationRequest, type ExplanationResult } from './explain/types';
+export { FORBIDDEN_CLAIM_PHRASES, findForbiddenClaim } from './claims';
 
 export { runAudit, type AuditOptions, type AuditResult } from './audit';

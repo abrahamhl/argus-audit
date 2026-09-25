@@ -5,6 +5,8 @@ import { securityHeadersScanner } from './security-headers';
 import { privacyPagesScanner } from './privacy-pages';
 import { brokenLinksScanner } from './broken-links';
 import { frontendTechScanner } from './frontend-tech';
+import { dnsScanner } from './dns';
+import { securityTxtScanner } from './security-txt';
 
 /**
  * Scanner order is part of the methodology: evidence ids and report order are
@@ -17,4 +19,6 @@ export const defaultScanners: Scanner[] = [
   privacyPagesScanner,
   brokenLinksScanner,
   frontendTechScanner,
+  dnsScanner,
+  securityTxtScanner,
 ];

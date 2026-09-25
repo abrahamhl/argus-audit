@@ -15,9 +15,15 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
+  "durable_objects": {
+    "bindings": [{ "name": "ABUSE_GUARD", "class_name": "AbuseGuard" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["AbuseGuard"] }],
   "vars": {
     "AUDIT_MODE": "live",
-    "AI_EXPLANATIONS": "off"
+    "AI_EXPLANATIONS": "off",
+    "DAILY_AUDIT_CAP": "500",
+    "TURNSTILE_SITE_KEY": ""
   }
   // Optional later (kept out until V0.4 saved audits / report artifacts):
   // "d1_databases": [{ "binding": "DB", "database_name": "argus-audit", "database_id": "<id>" }],

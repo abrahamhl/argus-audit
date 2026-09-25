@@ -1,5 +1,5 @@
 import type { Rule } from './types';
-import { buildFinding, boolOf, numOf, strOf } from './types';
+import { buildFinding, boolOf, numOf, responseUsable, strOf } from './types';
 import { CHECK_IDS } from '../contracts';
 
 const VERSION = '1.0.0';
@@ -48,6 +48,7 @@ export const noHttpsRedirectRule: Rule = {
     const redirect = index.first(CHECK_IDS.httpRedirect);
     if (reachable === undefined || reachable.state !== 'OBSERVED') return null;
     if (redirect === undefined || redirect.state !== 'OBSERVED') return null;
+    if (!responseUsable(index.first(CHECK_IDS.httpResponse))) return null;
     const upgraded = boolOf(redirect, 'upgradedToHttps');
     if (upgraded !== false) return null;
     const status = numOf(redirect, 'status');
@@ -83,6 +84,7 @@ export const hstsNotObservedRule: Rule = {
     const hsts = index.first(CHECK_IDS.hsts);
     if (reachable === undefined || reachable.state !== 'OBSERVED') return null;
     if (hsts === undefined || hsts.state !== 'OBSERVED') return null;
+    if (!responseUsable(index.first(CHECK_IDS.httpsResponse))) return null;
     if (boolOf(hsts, 'present') !== false) return null;
     return buildFinding({
       rule: hstsNotObservedRule,

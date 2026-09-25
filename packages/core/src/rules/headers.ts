@@ -1,12 +1,16 @@
 import type { Rule } from './types';
-import { boolOf, buildFinding, dataOf, strOf } from './types';
+import { boolOf, buildFinding, dataOf, responseUsable, strOf } from './types';
 import { CHECK_IDS } from '../contracts';
 import { HEADER_SPECS, FRAME_PROTECTION_HEADER, type HeaderSpec } from '../scanners/security-headers';
 import type { EvidenceRecord } from '../evidence';
 
 const VERSION = '1.0.0';
 
-function absentHeader(index: { first(checkId: string): EvidenceRecord | undefined }, name: string): EvidenceRecord | null {
+function absentHeader(
+  index: { first(checkId: string): EvidenceRecord | undefined },
+  name: string,
+): EvidenceRecord | null {
+  if (!responseUsable(index.first(CHECK_IDS.httpsResponse))) return null;
   const record = index.first(CHECK_IDS.headerPresence(name));
   if (record === undefined || record.state !== 'OBSERVED') return null;
   return boolOf(record, 'present') === false ? record : null;

@@ -1,0 +1,31 @@
+name: Deploy smoke (manual, live)
+
+# Non-scanning verification of a deployed runtime: health, security headers,
+# validation errors, methodology and lab endpoints, source-map exposure.
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Base URL to verify'
+        required: false
+        default: 'https://argus-audit.argus-lab.workers.dev'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Live smoke
+        run: node scripts/smoke-live.mjs "${{ inputs.base_url }}"

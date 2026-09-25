@@ -3,6 +3,7 @@ import { runAudit, type AuditResult } from './audit';
 import { TEST_AUDIT_ID, fixtureAuditOptions } from './test-utils';
 import { FixtureTransport } from './transport/fixture';
 import { fixedClock } from './util/clock';
+import { FORBIDDEN_CLAIM_PHRASES } from './claims';
 import type { FixtureBundle } from './transport/fixture-types';
 
 async function auditFixture(id: string): Promise<AuditResult> {
@@ -28,26 +29,31 @@ describe('end-to-end fixture audits', () => {
     expect(result.evidence.every((record) => record.provenance.fixtureId === 'healthy-site')).toBe(true);
   });
 
-  it('missing-headers: three review findings and four informational ones', async () => {
+  it('missing-headers: five review findings and six informational ones', async () => {
     const result = await auditFixture('missing-headers');
-    expect(result.summary.counts).toEqual({ critical: 0, review: 3, informational: 4, total: 7 });
+    expect(result.summary.counts).toEqual({ critical: 0, review: 5, informational: 6, total: 11 });
     expect(sortedIds(result, 'review')).toEqual([
+      'email.dmarc-missing',
+      'email.spf-missing',
       'headers.clickjacking-protection-not-observed',
       'headers.content-security-policy-not-observed',
       'transport.hsts-not-observed',
     ]);
     expect(sortedIds(result, 'informational')).toEqual([
+      'dns.caa-missing',
       'headers.permissions-policy-not-observed',
       'headers.referrer-policy-not-observed',
       'headers.x-content-type-options-not-observed',
       'privacy.consent-indicator-not-detected',
+      'security.txt-missing',
     ]);
   });
 
-  it('messy-site: mixed findings, zero critical, privacy and link problems surfaced', async () => {
+  it('messy-site: mixed findings, zero critical, privacy, link, email and DNS problems surfaced', async () => {
     const result = await auditFixture('messy-site');
-    expect(result.summary.counts).toEqual({ critical: 0, review: 6, informational: 7, total: 13 });
+    expect(result.summary.counts).toEqual({ critical: 0, review: 7, informational: 10, total: 17 });
     expect(sortedIds(result, 'review')).toEqual([
+      'email.spf-weak-all',
       'headers.clickjacking-protection-not-observed',
       'headers.content-security-policy-not-observed',
       'privacy.cookie-flags-incomplete',
@@ -55,9 +61,18 @@ describe('end-to-end fixture audits', () => {
       'transport.hsts-not-observed',
       'transport.no-https-redirect',
     ]);
-    expect(sortedIds(result, 'informational')).toContain('links.broken-sample');
-    expect(sortedIds(result, 'informational')).toContain('a11y.html-lang-not-observed');
-    expect(sortedIds(result, 'informational')).toContain('a11y.images-missing-alt');
+    expect(sortedIds(result, 'informational')).toEqual([
+      'a11y.html-lang-not-observed',
+      'a11y.images-missing-alt',
+      'dns.caa-missing',
+      'email.dmarc-policy-none',
+      'headers.permissions-policy-not-observed',
+      'headers.referrer-policy-not-observed',
+      'headers.x-content-type-options-not-observed',
+      'links.broken-sample',
+      'privacy.consent-indicator-not-detected',
+      'security.txt-missing',
+    ]);
 
     const broken = result.findings.find((finding) => finding.findingId === 'links.broken-sample');
     expect(broken?.summary).toContain('3 of 4');
@@ -156,34 +171,67 @@ describe('audit invariants', () => {
   });
 });
 
-describe('claims guard', () => {
-  const forbidden = [
-    'violates gdpr',
-    'gdpr violation',
-    'violation of the gdpr',
-    'non-compliant',
-    'noncompliant',
-    'illegal',
-    'fine of',
-    'fines of',
-    'will be fined',
-    'lawsuit',
-    'prosecut',
-    'certified secure',
-    'guaranteed secure',
-    'guaranteed to',
-    'hacked',
-    'urgent action',
-    'act now',
-    'limited time',
-  ];
+describe('evidence canonical hash', () => {
+  it('is a stable SHA-256 over the canonical evidence set and lands in the engineer report', async () => {
+    const first = await auditFixture('messy-site');
+    const second = await auditFixture('messy-site');
+    expect(first.evidenceHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(first.evidenceHash).toBe(second.evidenceHash);
+    expect(first.reports.engineer).toContain(first.evidenceHash);
 
+    const other = await auditFixture('healthy-site');
+    expect(other.evidenceHash).not.toBe(first.evidenceHash);
+  });
+});
+
+describe('blocked root responses (WAF / challenge pages)', () => {
+  const blockedBundle: FixtureBundle = {
+    id: 'blocked-root',
+    name: 'WAF-blocked root',
+    target: 'https://blocked.test/',
+    recordedAt: '2026-09-20T00:00:00.000Z',
+    responses: [
+      {
+        url: 'http://blocked.test/',
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+        body: '<html><body>plain</body></html>',
+      },
+      {
+        url: 'https://blocked.test/',
+        status: 403,
+        headers: { 'content-type': 'text/html', server: 'cloudflare' },
+        body: '<html><body>Attention Required! Challenge page</body></html>',
+      },
+    ],
+  };
+
+  it('never turns an error-status root into header, privacy or accessibility findings', async () => {
+    const result = await runAudit({
+      target: blockedBundle.target,
+      transport: new FixtureTransport(blockedBundle),
+      clock: fixedClock('2026-09-21T12:00:00.000Z'),
+      auditId: TEST_AUDIT_ID,
+      source: 'fixture',
+      limits: { perRequestDelayMs: 0 },
+    });
+
+    expect(result.findings.map((finding) => finding.findingId)).toEqual(['transport.no-https-redirect']);
+    const scan = result.evidence.find((record) => record.checkId === 'privacy.link.scan');
+    expect(scan?.state).toBe('NOT_CHECKED');
+    expect(scan?.data).toMatchObject({ reason: 'blocked' });
+    const a11y = result.evidence.find((record) => record.checkId === 'a11y.signals');
+    expect(a11y?.state).toBe('NOT_CHECKED');
+  });
+});
+
+describe('claims guard', () => {
   it('never states legal conclusions, fines or fear marketing in any report', async () => {
     for (const id of ['healthy-site', 'missing-headers', 'messy-site'] as const) {
       const result = await auditFixture(id);
       for (const mode of ['simple', 'engineer', 'client'] as const) {
         const text = result.reports[mode].toLowerCase();
-        for (const phrase of forbidden) {
+        for (const phrase of FORBIDDEN_CLAIM_PHRASES) {
           expect(text.includes(phrase), `${id}/${mode} contains "${phrase}"`).toBe(false);
         }
       }
@@ -207,7 +255,26 @@ describe('optional AI explanation layer', () => {
     expect(result.explainer.error).toContain('provider unavailable');
     expect(result.explainer.applied).toBe(0);
     expect(result.reports.client).toContain('not a security assessment');
-    expect(result.summary.counts.total).toBe(13);
+    expect(result.summary.counts.total).toBe(17);
+  });
+
+  it('rejects AI output that introduces a forbidden legal or fear claim', async () => {
+    const options = fixtureAuditOptions('messy-site');
+    const result = await runAudit({
+      ...options,
+      explainer: {
+        id: 'claim-injecting-test-explainer',
+        enabled: true,
+        async explain() {
+          return { clientExplanation: 'This company violates GDPR and will be fined.' };
+        },
+      },
+    });
+    expect(result.explainer.applied).toBe(0);
+    expect(result.explainer.error).toContain('forbidden claim');
+    for (const finding of result.findings) {
+      expect(finding.clientExplanation.toLowerCase()).not.toContain('violates gdpr');
+    }
   });
 
   it('applies a successful explanation while keeping deterministic findings intact', async () => {

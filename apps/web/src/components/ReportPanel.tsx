@@ -180,6 +180,10 @@ function EngineerReport({
             {result.summary.checksRun} checks · {result.summary.evidenceCount} evidence records
           </dd>
         </div>
+        <div>
+          <dt>Evidence canonical hash (SHA-256)</dt>
+          <dd className="mono small">{result.evidenceHash}</dd>
+        </div>
       </dl>
 
       {result.findings.map((finding) => (

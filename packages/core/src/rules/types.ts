@@ -68,6 +68,18 @@ export function arrOf(record: EvidenceRecord, key: string): JsonValue[] {
   return Array.isArray(value) ? value : [];
 }
 
+/**
+ * A response is usable for *absence* claims only when it is a normal 2xx/3xx
+ * document response. WAF challenge pages (403), maintenance pages (503) and
+ * other error responses must not be turned into "header missing" findings —
+ * the header may simply not be set on that error response.
+ */
+export function responseUsable(record: EvidenceRecord | undefined): boolean {
+  if (record === undefined || record.state !== 'OBSERVED') return false;
+  const status = numOf(record, 'status');
+  return status !== null && status >= 200 && status < 400;
+}
+
 export interface FindingInput {
   rule: Rule;
   state: EvidenceState;

@@ -35,6 +35,7 @@ export interface ReportInput {
   source: 'live' | 'fixture';
   findings: Finding[];
   evidence: EvidenceRecord[];
+  evidenceHash: string;
   summary: AuditSummary;
   freshness: DataFreshness;
   limitations: string[];

@@ -10,8 +10,9 @@ principles — *Evidence → Provenance → Freshness → Confidence → Finding
 — applied to the public surface of a single website.
 
 > **Status: V0 preview.** One website at a time. Passive checks only. No
-> accounts, no billing, no location discovery yet. Not deployed as a commercial
-> service. Every plan below is a PR-sized next step, not a promise.
+> accounts and no billing. **Live preview:**
+> https://argus-audit.argus-lab.workers.dev/ (self-serve, rate-limited, daily
+> capped) — not a commercial service and not a security assessment.
 
 ---
 
@@ -35,6 +36,26 @@ principles — *Evidence → Provenance → Freshness → Confidence → Finding
 | `privacy.pages` | Privacy / terms / legal / contact / accessibility link presence in delivered HTML; reachability of the privacy link; consent-tool name indicators |
 | `links.broken` | Bounded sample (max 10) of internal links, HEAD then GET confirmation, rate-limit-aware |
 | `frontend.tech` | Technology indicators from HTML/headers (all `INFERRED`); basic accessibility signals (lang, viewport, img alt) |
+| `dns.records` | A, AAAA, MX, TXT (SPF), CAA and _dmarc TXT through DNS-over-HTTPS; every answer recorded as evidence |
+| `security.txt.check` | RFC 9116 file at `/.well-known/security.txt` and `/security.txt`; Contact/Expires parsed (no addresses stored) |
+
+Rules built on that evidence: transport (unreachable, no redirect, HSTS),
+headers (CSP, framing protection, XCTO, referrer, permissions), privacy (no
+privacy link, unreachable privacy page, consent indicator, cookie flags), email
+DNS (SPF missing/weak, DMARC missing/`p=none`, CAA missing), security.txt
+(missing/expired), links (broken sample) and accessibility (html lang, image
+alt). `GET /api/methodology` lists the exact set at runtime — currently 8
+scanners and 22 rules, all deterministic.
+
+## Console surfaces
+
+| Route | Purpose |
+|---|---|
+| `/` | Product presentation, pipeline overview, honest gate status |
+| `/audit` | Live passive auditor for one authorised website |
+| `/lab` | **Simulator**: replays the recorded fixtures; clearly labelled, contacts nothing |
+| `/method` | Methodology generated from the runtime (states, scanners, rules, limits) |
+| `/architecture` | Pipeline diagram, trust boundaries, adapter boundaries (TLS, DNS, AI) |
 
 ## What V0 deliberately does not do
 
@@ -147,19 +168,43 @@ Posture: [SECURITY.md](SECURITY.md).
 
 ## Deployment (Cloudflare Workers, free-first)
 
+**Live preview:** https://argus-audit.argus-lab.workers.dev/
+Deployed baseline and release SHA are recorded in
+[docs/STATE.md](docs/STATE.md). The live runtime currently serves: `mode:"live"`,
+`aiExplanations:false`, methodology from [docs/EVIDENCE_CONTRACT.md](docs/EVIDENCE_CONTRACT.md).
+
 ```bash
-pnpm build                                       # web app
+pnpm build                                       # web app + assets
 pnpm --filter @argus-audit/worker dry-run        # bundle validation
-wrangler login                                   # once
-pnpm --filter @argus-audit/worker deploy
+pnpm --filter @argus-audit/worker deploy         # requires wrangler auth
+pnpm smoke:live                                  # post-deploy verification
 ```
 
-Deployment status is **not claimed** by this repository. Before a public
-deployment, verify the checklist in [docs/THREAT_MODEL.md](docs/THREAT_MODEL.md#pre-deployment-checklist):
-tests green, no secrets in history, CSP and security headers, no provider
-secrets in the client bundle, rate limits, error handling, deterministic
-fixtures, report provenance, mobile layout, keyboard accessibility and a clean
-clone reproduction.
+The smoke script verifies health, the full security-header set, API validation
+errors, the methodology/lab endpoints and that no source map is served. It is
+also available as a manual workflow (`.github/workflows/deploy-smoke.yml`).
+
+Operational controls on the live deployment:
+
+- **Abuse guard (Durable Object):** per-IP sliding window (default 5 audits per
+  60 s) plus a **global daily audit cap** (default 500, `DAILY_AUDIT_CAP`)
+  persisting across isolates and deploys. In-memory fallback for local dev.
+- **Origin policy:** API accepts same-origin browser requests or an explicit
+  `ALLOWED_ORIGIN` for development; cross-origin origin headers are rejected.
+- **Scope acknowledgement:** every audit request must carry
+  `"acknowledged": true`; the UI requires an explicit checkbox.
+- **Turnstile:** code support is installed and optional. The public site key is
+  served via `/api/health` when configured; the secret is a Worker secret
+  (`wrangler secret put TURNSTILE_SECRET`). Activation is an owner action; see
+  [docs/OPEN_LOOPS.md](docs/OPEN_LOOPS.md).
+- **AI explanations:** off by default; if enabled, model output that contains a
+  forbidden claim phrase is rejected and the deterministic text is used.
+- **No source maps** are built or served; CI enforces this and inspects the
+  client bundle for secret-like strings.
+
+Before any change reaches the public URL, run `pnpm verify` and then
+`pnpm smoke:live`. The pre-deployment checklist lives in
+[docs/THREAT_MODEL.md](docs/THREAT_MODEL.md#pre-deployment-checklist).
 
 Infrastructure cost assumptions live in
 [`config/infra-costs.json`](config/infra-costs.json) (verified against provider

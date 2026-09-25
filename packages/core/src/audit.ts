@@ -10,11 +10,15 @@ import { defaultScanners } from './scanners';
 import { computeFreshness, computeSummary, renderReports, type AuditSummary, type DataFreshness, type ReportMode } from './report';
 import { METHODOLOGY_VERSION } from './version';
 import { systemClock, type Clock } from './util/clock';
+import { sha256Hex, stableJson } from './util/hash';
+import { findForbiddenClaim } from './claims';
 import { templateExplainer, type ExplanationProvider } from './explain/types';
+import { unavailableDnsResolver, type DnsResolver } from './dns/types';
 
 export interface AuditOptions {
   target: string;
   transport: HttpTransport;
+  dnsResolver?: DnsResolver;
   clock?: Clock;
   auditId?: string;
   limits?: Partial<Limits>;
@@ -33,6 +37,8 @@ export interface AuditResult {
   source: 'live' | 'fixture';
   evidence: EvidenceRecord[];
   findings: Finding[];
+  /** SHA-256 over the canonical JSON of the evidence set (tamper evidence). */
+  evidenceHash: string;
   reports: Record<ReportMode, string>;
   summary: AuditSummary;
   freshness: DataFreshness;
@@ -75,6 +81,7 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
     target,
     clock,
     http,
+    dns: options.dnsResolver ?? unavailableDnsResolver,
     limits,
     source,
     evidence: evidenceBuilder,
@@ -103,6 +110,7 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
   }
 
   const evidence = [...evidenceBuilder.records];
+  const evidenceHash = await sha256Hex(stableJson(evidence));
   const generatedAt = clock.nowIso();
 
   let findings = evaluateRules(evidence, {
@@ -125,10 +133,14 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
         const related = evidence.filter((record) => finding.evidenceIds.includes(record.evidenceId));
         const result = await explainer.explain({ finding, evidence: related });
         const replacement = result?.clientExplanation;
-        if (typeof replacement === 'string' && replacement.trim().length > 0) {
+        const forbidden = replacement === undefined ? null : findForbiddenClaim(replacement);
+        if (typeof replacement === 'string' && replacement.trim().length > 0 && forbidden === null) {
           enriched.push({ ...finding, clientExplanation: replacement.trim() });
           explainerStatus.applied += 1;
         } else {
+          if (forbidden !== null && explainerStatus.error === null) {
+            explainerStatus.error = `AI output rejected (forbidden claim phrase: "${forbidden}")`;
+          }
           enriched.push(finding);
         }
       } catch (error) {
@@ -158,6 +170,7 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
     source,
     findings,
     evidence,
+    evidenceHash,
     summary,
     freshness,
     limitations,
@@ -173,6 +186,7 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
     source,
     evidence,
     findings,
+    evidenceHash,
     reports,
     summary,
     freshness,

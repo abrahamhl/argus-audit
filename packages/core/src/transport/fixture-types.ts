@@ -15,6 +15,8 @@ export interface FixtureResponse {
   recordedAt?: string;
 }
 
+import type { FixtureDnsEntry } from '../dns/types';
+
 export interface FixtureBundle {
   id: string;
   name: string;
@@ -23,5 +25,7 @@ export interface FixtureBundle {
   /** When the recording was captured (ISO). Shown as evidence freshness. */
   recordedAt: string;
   notes?: string[];
+  /** Recorded DNS answers for the fixture DNS resolver. */
+  dns?: FixtureDnsEntry[];
   responses: FixtureResponse[];
 }

@@ -13,6 +13,7 @@ export function renderEngineerReport(input: ReportInput): string {
   lines.push(
     `**Window:** ${input.startedAt} → ${input.finishedAt} · **Checks executed:** ${input.summary.checksRun} · **Evidence records:** ${input.summary.evidenceCount}`,
   );
+  lines.push(`**Evidence canonical hash (SHA-256):** \`${input.evidenceHash}\``);
   lines.push('');
 
   if (input.findings.length === 0) {

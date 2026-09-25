@@ -1,5 +1,6 @@
 import type { HttpTransport, RawRequest, RawResponse } from './types';
 import type { FixtureBundle, FixtureResponse } from './fixture-types';
+import { sha256Hex } from '../util/hash';
 
 interface FixtureKey {
   method: 'GET' | 'HEAD';
@@ -73,6 +74,7 @@ export class FixtureTransport implements HttpTransport {
       result.bodyText = response.body;
       result.bodyBytes = response.body.length;
       result.bodyTruncated = false;
+      result.bodySha256 = await sha256Hex(response.body);
     }
     return result;
   }

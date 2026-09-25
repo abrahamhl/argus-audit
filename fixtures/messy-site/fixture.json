@@ -6,7 +6,20 @@
   "notes": [
     "Synthetic fixture. Not a recording of a real company.",
     "No HTTPS redirect, no security headers, cookies without Secure, privacy link returns 404, broken internal links, missing lang and alt attributes.",
-    "Expected outcome: six review findings, seven informational findings, zero critical."
+    "Expected outcome: seven review findings, ten informational findings, zero critical."
+  ],
+  "dns": [
+    { "name": "messy-site.test", "type": "A", "status": "OK", "answers": [{ "data": "203.0.113.20", "ttl": 300 }] },
+    { "name": "messy-site.test", "type": "AAAA", "status": "OK", "answers": [] },
+    { "name": "messy-site.test", "type": "MX", "status": "OK", "answers": [{ "data": "10 mx.messy-site.test.", "ttl": 300 }] },
+    { "name": "messy-site.test", "type": "TXT", "status": "OK", "answers": [{ "data": "v=spf1 +all", "ttl": 300 }] },
+    { "name": "messy-site.test", "type": "CAA", "status": "OK", "answers": [] },
+    {
+      "name": "_dmarc.messy-site.test",
+      "type": "TXT",
+      "status": "OK",
+      "answers": [{ "data": "v=DMARC1; p=none; rua=mailto:dmarc@messy-site.test", "ttl": 300 }]
+    }
   ],
   "responses": [
     {

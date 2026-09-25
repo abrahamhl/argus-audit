@@ -2,6 +2,7 @@ import type { Clock } from './util/clock';
 import type { EvidenceBuilder } from './evidence';
 import type { HttpClient } from './transport/client';
 import type { NormalizedTarget } from './url-guard';
+import type { DnsResolver } from './dns/types';
 
 export interface Limits {
   requestTimeoutMs: number;
@@ -11,6 +12,7 @@ export interface Limits {
   perRequestDelayMs: number;
   auditBudgetMs: number;
   maxTotalRequests: number;
+  maxDnsQueries: number;
 }
 
 export const DEFAULT_LIMITS: Limits = {
@@ -21,6 +23,7 @@ export const DEFAULT_LIMITS: Limits = {
   perRequestDelayMs: 200,
   auditBudgetMs: 45_000,
   maxTotalRequests: 40,
+  maxDnsQueries: 6,
 };
 
 export interface ScanContext {
@@ -28,6 +31,7 @@ export interface ScanContext {
   target: NormalizedTarget;
   clock: Clock;
   http: HttpClient;
+  dns: DnsResolver;
   limits: Limits;
   source: 'live' | 'fixture';
   evidence: EvidenceBuilder;
@@ -59,4 +63,7 @@ export const CHECK_IDS = {
   techIndicator: 'tech.indicator',
   techSummary: 'tech.summary',
   a11ySignals: 'a11y.signals',
+  dnsAnswer: (type: string) => `dns.answer.${type}`,
+  dnsSummary: 'dns.summary',
+  securityTxt: 'security.txt.presence',
 } as const;
