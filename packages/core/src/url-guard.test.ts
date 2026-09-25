@@ -85,3 +85,59 @@ describe('redirect validation', () => {
     expect(isAllowedRedirectUrl('https://user:pass@example.com/')).toBe(false);
   });
 });
+
+// Purple-team regressions: forms the WHATWG URL parser produces that a string denylist can miss.
+describe('SSRF bypass regressions', () => {
+  const blocked = [
+    'http://[::ffff:127.0.0.1]/', // parser rewrites to [::ffff:7f00:1]
+    'http://[::ffff:169.254.169.254]/', // cloud metadata via mapped hex form
+    'http://[::ffff:10.0.0.1]/',
+    'http://[::127.0.0.1]/', // IPv4-compatible, rewritten to [::7f00:1]
+    'http://[64:ff9b::a9fe:a9fe]/', // NAT64 to 169.254.169.254
+    'http://[2002:7f00:1::]/', // 6to4 embedding 127.0.0.1
+    'http://[0:0:0:0:0:0:0:1]/', // loopback spelled out
+    'http://localhost./', // trailing dot
+    'http://foo.localhost./',
+    'http://metadata.google.internal./',
+    'http://printer.local./',
+    'http://2130706433/', // decimal 127.0.0.1
+    'http://0x7f.1/', // hex shorthand
+    'http://017700000001/', // octal
+  ];
+
+  it.each(blocked)('rejects %s as a target and as a redirect hop', (url) => {
+    expect(normalizeTargetInput(url).ok).toBe(false);
+    expect(isAllowedRedirectUrl(url)).toBe(false);
+  });
+
+  it.each(['https://example.com./', 'http://[2606:4700:4700::1111]/', 'http://[::ffff:8.8.8.8]/'])(
+    'still accepts public %s',
+    (url) => {
+      expect(normalizeTargetInput(url).ok).toBe(true);
+      expect(isAllowedRedirectUrl(url)).toBe(true);
+    },
+  );
+
+  it('normalizes a trailing dot away from the audited hostname', () => {
+    const result = normalizeTargetInput('https://example.com./');
+    expect(result.ok && result.target.hostname).toBe('example.com');
+  });
+});
+
+describe('checkHostname on raw IPv6 spellings', () => {
+  it.each(['::ffff:127.0.0.1', '::127.0.0.1', '[::1]', '::ffff:7f00:1', 'fe80::1', 'fd00::1', 'ff02::1', '2001:db8::1'])(
+    'denies %s',
+    (host) => {
+      expect(checkHostname(host).allowed).toBe(false);
+    },
+  );
+
+  it.each(['::ffff:8.8.8.8', '2606:4700:4700::1111', '2a00:1450:4001:80b::200e'])('allows %s', (host) => {
+    expect(checkHostname(host).allowed).toBe(true);
+  });
+
+  it('rejects malformed IPv6', () => {
+    expect(checkHostname('1::2::3').allowed).toBe(false);
+    expect(checkHostname('12345::1').allowed).toBe(false);
+  });
+});

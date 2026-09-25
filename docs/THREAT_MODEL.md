@@ -43,7 +43,7 @@ browser ──(same-origin /api)──► Worker ──(validated fetch)──�
 
 | # | Threat | Mitigation | Residual risk |
 |---|---|---|---|
-| T1 | SSRF: scan internal services via direct target | `url-guard.ts`: schemes, ports, credentials, hostname/IP denylists (v4+v6, mapped), denied suffixes | DNS rebinding/TOCTOU not solvable in Workers fetch; documented |
+| T1 | SSRF: scan internal services via direct target | `url-guard.ts`: schemes, ports, credentials, trailing-dot names, hostname/IP denylists; IPv6 parsed to 8 hextets so embedded IPv4 is checked (mapped `::ffff:7f00:1`, compatible, NAT64, 6to4; Teredo and 2001:db8 refused); live audits refuse names whose A/AAAA answers are private (`dns/preflight.ts`, answers reused by the DNS scanner) | Rebinding between the DoH answer and the Workers fetch remains; redirect hops are checked by literal only |
 | T2 | SSRF via redirect to private space | `HttpClient` validates every redirect hop with the same guard; blocks with `REDIRECT_BLOCKED` | Redirects to a public host that later resolves privately |
 | T3 | Scanner becomes a DDoS reflector | Sequential requests, per-request delay, sample cap (10), 40-request/45-second audit budget, 512 KB body cap | Coordinated abuse via many IPs |
 | T4 | API abuse / cost exhaustion | Durable Object sliding window (5/min/IP) + global daily audit cap (default 500) that survives isolate eviction; concurrency cap (4); optional Turnstile; body-size cap | Distributed abuse below per-IP thresholds still limited by the daily cap |

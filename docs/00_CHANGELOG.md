@@ -5,6 +5,27 @@ adjetivos.
 
 ---
 
+## 2026-09-25 — Endurecimiento SSRF, licencia y datos personales
+
+### FIXED
+
+- **10 bypasses del guard SSRF** reproducidos con tests antes de arreglarlos: el parser WHATWG reescribe
+  `[::ffff:127.0.0.1]` como `[::ffff:7f00:1]` y la comprobación de "mapped" dejaba de ver el IPv4; también
+  pasaban `[::127.0.0.1]`, NAT64 `64:ff9b::a9fe:a9fe` (metadata), 6to4 `2002:7f00:1::`, `localhost.`,
+  `foo.localhost.`, `metadata.google.internal.` y `printer.local.`. Ahora el IPv6 se expande a 8 grupos y se
+  revisa el IPv4 embebido; el punto final se normaliza.
+- **Pre-flight DNS** (solo live): si un dominio público resuelve a una IP privada (`127.0.0.1.nip.io`) la
+  auditoría se rechaza con `PRIVATE_RESOLUTION` antes de la primera petición HTTP. Las respuestas A/AAAA se
+  memorizan y las reutiliza el escáner DNS: el presupuesto de ≤6 consultas no cambia.
+- Tests: core 67 → 105 (url-guard 17 → 41, pre-flight 9 nuevos). `pnpm verify` verde.
+
+### CHANGED
+
+- `LICENSE` Apache-2.0 añadido (el repo era público sin licencia).
+- Email personal, id de cuenta Cloudflare y rutas locales retirados de `docs/`.
+
+---
+
 ## 2026-09-22 — PR-03: portes donantes (DNS/SPF/DMARC, security.txt)
 
 ### DONE
