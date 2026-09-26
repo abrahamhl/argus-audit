@@ -14,6 +14,7 @@ import { sha256Hex, stableJson } from './util/hash';
 import { findForbiddenClaim } from './claims';
 import { templateExplainer, type ExplanationProvider } from './explain/types';
 import { unavailableDnsResolver, type DnsResolver } from './dns/types';
+import { findPrivateResolution, memoizeResolver } from './dns/preflight';
 
 export interface AuditOptions {
   target: string;
@@ -66,6 +67,13 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
   const scanners = options.scanners ?? defaultScanners;
   const explainer = options.explainer ?? templateExplainer;
 
+  const dns = memoizeResolver(options.dnsResolver ?? unavailableDnsResolver);
+  // Recorded fixtures replay documentation-range addresses and never touch the network.
+  const privateAddress = (options.source ?? 'live') === 'live' ? await findPrivateResolution(dns, target.hostname) : null;
+  if (privateAddress !== null) {
+    throw new AuditError('PRIVATE_RESOLUTION', 'This address resolves to a private or reserved network and is not auditable.');
+  }
+
   const startedAt = clock.nowIso();
   const memo = new MemoTransport(options.transport);
   const http = new HttpClient(memo, clock, {
@@ -81,7 +89,7 @@ export async function runAudit(options: AuditOptions): Promise<AuditResult> {
     target,
     clock,
     http,
-    dns: options.dnsResolver ?? unavailableDnsResolver,
+    dns,
     limits,
     source,
     evidence: evidenceBuilder,

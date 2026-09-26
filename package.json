@@ -19,5 +19,6 @@
     "dev:worker:fixture": "pnpm --filter @argus-audit/worker dev:fixture",
     "dev:web": "pnpm --filter @argus-audit/web dev",
     "deploy": "pnpm build && pnpm --filter @argus-audit/worker deploy"
-  }
+  },
+  "license": "Apache-2.0"
 }
